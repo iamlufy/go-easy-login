@@ -7,11 +7,11 @@ import (
 
 type TokenServiceImpl struct{}
 
-func (t *TokenServiceImpl) generate(uniqueCode string, effectiveSeconds int) string {
+func (t *TokenServiceImpl) Generate(uniqueCode string, effectiveSeconds int) string {
 	return generateJwt(uniqueCode, effectiveSeconds)
 }
 
-func (t *TokenServiceImpl) verify(token string) {
+func (t *TokenServiceImpl) Verify(token string) {
 }
 
 func generateJwt(uniqueCode string, effectiveSeconds int) string {

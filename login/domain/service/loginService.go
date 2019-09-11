@@ -38,7 +38,7 @@ func NewLoginService(repo LoginUserRepo, token TokenService) *LoginService {
 
 //todo application should check tenant  and consider to cache result
 //tenant属于更高层次的领域，loginUser属于低层次，不应该掌握高层的信息，只能被通知
-func (service *LoginService) Login(loginCmd common.LoginCmd) (string, error) {
+func (service *LoginService) Login(loginCmd *common.LoginCmd) (string, error) {
 	userDO := service.GetOne(loginCmd.Username, loginCmd.TenantId)
 	userE := common.ToLoginUserE(*userDO)
 	userE.EncryptWay = domain.EncryptWay(loginCmd.EncryptWay)
