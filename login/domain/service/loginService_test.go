@@ -4,6 +4,7 @@ import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 	"oneday-infrastructure/login/domain"
 	"oneday-infrastructure/login/domain/common"
 	"oneday-infrastructure/login/mocks"
@@ -11,15 +12,15 @@ import (
 )
 
 var repo *mocks.LoginUserRepo
+var token *mocks.TokenService
 var tt *testing.T
 
 func TestLogin(t *testing.T) {
 
 	repo = &mocks.LoginUserRepo{}
+	token = &mocks.TokenService{}
 	repo.Test(t)
-	loginService = NewLoginService(repo, func(uniqueCode string, effectiveSeconds int) string {
-		return "token"
-	})
+	loginService = NewLoginService(repo, token)
 	tt = t
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "login Suite")
@@ -42,11 +43,13 @@ var _ = Describe("loginService", func() {
 				LoginWay:         "PASSWORD",
 			}
 			userDO = &domain.LoginUserDO{
-				Username: loginCmd.Username,
-				TenantId: loginCmd.TenantId,
-				Mobile:   loginCmd.Mobile,
-				Password: "123123",
+				Username:   loginCmd.Username,
+				TenantId:   loginCmd.TenantId,
+				Mobile:     loginCmd.Mobile,
+				Password:   "123123",
+				UniqueCode: "uniqueCode",
 			}
+			loginService.TokenService.(*mocks.TokenService).On("Generate",userDO.UniqueCode,mock.Anything ).Return("token")
 			loginService.LoginUserRepo.(*mocks.LoginUserRepo).On("GetOne", loginCmd.Username, loginCmd.TenantId).Return(userDO).Once()
 		})
 
@@ -84,7 +87,7 @@ var _ = Describe("loginService", func() {
 		var loginWay string
 
 		It("login way is sms code", func() {
-			loginService.LoginUserRepo.(*mocks.LoginUserRepo).On("FindSmsCode",loginCmd.Mobile).Return(code).Once()
+			loginService.LoginUserRepo.(*mocks.LoginUserRepo).On("FindSmsCode", loginCmd.Mobile).Return(code).Once()
 			loginWay = "SMS"
 			Expect(loginService.encryptCode(loginWay, userDO)).To(Equal(code))
 			loginService.LoginUserRepo.(*mocks.LoginUserRepo).AssertExpectations(tt)

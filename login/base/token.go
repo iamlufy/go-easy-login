@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type TokenServiceImpl struct{}
+
+func (t *TokenServiceImpl) generate(uniqueCode string, effectiveSeconds int) string {
+	return generateJwt(uniqueCode, effectiveSeconds)
+}
+
+func (t *TokenServiceImpl) verify(token string) {
+}
 
 func generateJwt(uniqueCode string, effectiveSeconds int) string {
 	iat := time.Now().Unix()
@@ -24,4 +32,3 @@ func generateJwt(uniqueCode string, effectiveSeconds int) string {
 		panic(err)
 	}
 }
-

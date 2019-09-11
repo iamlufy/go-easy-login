@@ -9,7 +9,12 @@ var loginService *LoginService
 
 type LoginService struct {
 	LoginUserRepo
-	token func(uniqueCode string, effectiveSeconds int) string
+	TokenService
+}
+
+type TokenService interface {
+	Generate(uniqueCode string, effectiveSeconds int) string
+	Verify(token string)
 }
 
 type LoginUserRepo interface {
@@ -19,11 +24,11 @@ type LoginUserRepo interface {
 	FindSmsCode(mobile string) string
 }
 
-func NewLoginService(repo LoginUserRepo, token func(uniqueCode string, effectiveSeconds int) string) *LoginService {
+func NewLoginService(repo LoginUserRepo, token TokenService) *LoginService {
 	if loginService == nil {
 		return &LoginService{
 			LoginUserRepo: repo,
-			token:         token,
+			TokenService:  token,
 		}
 	} else {
 		return loginService
@@ -44,7 +49,7 @@ func (service *LoginService) Login(loginCmd common.LoginCmd) (string, error) {
 	}
 
 	//todo add login event and callback
-	return service.token(userE.UniqueCode, loginCmd.EffectiveSeconds), nil
+	return service.Generate(userE.UniqueCode, loginCmd.EffectiveSeconds), nil
 }
 
 func (service *LoginService) encryptCode(way string, userDO *domain.LoginUserDO) string {
@@ -60,5 +65,6 @@ func (service *LoginService) encryptCode(way string, userDO *domain.LoginUserDO)
 
 func (service *LoginService) AddUser(cmd *common.AddLoginUserCmd) {
 	loginUserDO := common.ToLoginUserDO(cmd)
+	loginUserDO.Password = domain.EncryptWay(cmd.EncryptWay).EncryptHelper().Encrypt(loginUserDO.Password)
 	service.Add(loginUserDO)
 }
