@@ -2,22 +2,49 @@ package base
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"oneday-infrastructure/login/base/cache"
 	"time"
 )
+
+//TODO(zzf):to be configurable
+const Second = 3600
+const ActiveTime = 600
+
+var tokenSecret = []byte("123")
 
 type TokenServiceImpl struct{}
 
 func (t *TokenServiceImpl) Generate(uniqueCode string, effectiveSeconds int) string {
-	return generateJwt(uniqueCode, effectiveSeconds)
+	token := generateJwt(uniqueCode, int64(effectiveSeconds))
+	cacheToken(uniqueCode, token)
+	return token
 }
 
-func (t *TokenServiceImpl) Verify(token string) {
+func (t *TokenServiceImpl) Verify(tokenString string) (bool, string) {
+	token, e := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, e error) {
+		return tokenSecret, nil
+	})
+	if e != nil {
+		claim := token.Claims.(jwt.MapClaims)
+		code := claim["code"].(string)
+		if getCache(code) != "" {
+			return true, t.Generate(code, Second)
+		} else {
+			panic(e)
+		}
+	}
+
+	return token.Valid, token.Raw
+
 }
 
-func generateJwt(uniqueCode string, effectiveSeconds int) string {
-	iat := time.Now().Unix()
+func generateJwt(uniqueCode string, effectiveSeconds int64) string {
+	now := time.Now()
+	//issue at time
+	iat := now.Unix()
+	// not before
 	nbf := iat
-	exp := time.Now().Add(time.Duration(time.Second.Seconds() * float64(effectiveSeconds))).Unix()
+	exp := now.Add(time.Duration(effectiveSeconds * 1e9)).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"code": uniqueCode,
@@ -25,10 +52,18 @@ func generateJwt(uniqueCode string, effectiveSeconds int) string {
 		"iat":  iat,
 		"exp":  exp,
 	})
-	//todo secret should to be config
-	if tokenString, err := token.SignedString([]byte("123")); err == nil {
+
+	if tokenString, err := token.SignedString(tokenSecret); err == nil {
 		return tokenString
 	} else {
 		panic(err)
 	}
+}
+
+func cacheToken(key, token string) {
+	cache.Add("token:"+key, token, ActiveTime)
+}
+
+func getCache(key string) string {
+	return cache.Get("token:" + key)
 }

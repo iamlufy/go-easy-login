@@ -24,6 +24,22 @@ func (_m *TokenService) Generate(uniqueCode string, effectiveSeconds int) string
 }
 
 // Verify provides a mock function with given fields: token
-func (_m *TokenService) Verify(token string) {
-	_m.Called(token)
+func (_m *TokenService) Verify(token string) (bool, string) {
+	ret := _m.Called(token)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(token)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 string
+	if rf, ok := ret.Get(1).(func(string) string); ok {
+		r1 = rf(token)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	return r0, r1
 }

@@ -14,7 +14,7 @@ type LoginService struct {
 
 type TokenService interface {
 	Generate(uniqueCode string, effectiveSeconds int) string
-	Verify(token string)
+	Verify(token string) (bool, string)
 }
 
 type LoginUserRepo interface {
@@ -67,4 +67,8 @@ func (service *LoginService) AddUser(cmd *common.AddLoginUserCmd) {
 	loginUserDO := common.ToLoginUserDO(cmd)
 	loginUserDO.Password = domain.EncryptWay(cmd.EncryptWay).EncryptHelper().Encrypt(loginUserDO.Password)
 	service.Add(loginUserDO)
+}
+
+func (service *LoginService) CheckLogin(token string) (bool, string) {
+	return service.Verify(token)
 }

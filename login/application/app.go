@@ -25,3 +25,7 @@ func Login(cmd *common.LoginCmd) string {
 func AddUser(cmd *common.AddLoginUserCmd) {
 	loginService.AddUser(cmd)
 }
+
+func CheckLogin(token string) (bool, string) {
+	return loginService.CheckLogin(token)
+}
