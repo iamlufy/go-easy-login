@@ -1,8 +1,8 @@
-package base
+package token
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"oneday-infrastructure/login/base/cache"
+	"oneday-infrastructure/authenticate/base/cache"
 	"time"
 )
 
@@ -12,15 +12,13 @@ const ActiveTime = 600
 
 var tokenSecret = []byte("123")
 
-type TokenServiceImpl struct{}
-
-func (t *TokenServiceImpl) Generate(uniqueCode string, effectiveSeconds int) string {
+func Generate(uniqueCode string, effectiveSeconds int) string {
 	token := generateJwt(uniqueCode, int64(effectiveSeconds))
 	cacheToken(uniqueCode, token)
 	return token
 }
 
-func (t *TokenServiceImpl) Verify(tokenString string) (bool, string) {
+func Verify(tokenString string) (bool, string) {
 	token, e := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, e error) {
 		return tokenSecret, nil
 	})
@@ -28,7 +26,7 @@ func (t *TokenServiceImpl) Verify(tokenString string) (bool, string) {
 		claim := token.Claims.(jwt.MapClaims)
 		code := claim["code"].(string)
 		if getCache(code) != "" {
-			return true, t.Generate(code, Second)
+			return true, Generate(code, Second)
 		} else {
 			panic(e)
 		}

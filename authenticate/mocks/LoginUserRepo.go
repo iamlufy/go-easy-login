@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	domain "oneday-infrastructure/login/domain"
+	domain "oneday-infrastructure/authenticate/domain"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -16,6 +16,29 @@ type LoginUserRepo struct {
 // Add provides a mock function with given fields: _a0
 func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) {
 	_m.Called(_a0)
+}
+
+// FindOne provides a mock function with given fields: username
+func (_m *LoginUserRepo) FindOne(username string) (*domain.LoginUserDO, bool) {
+	ret := _m.Called(username)
+
+	var r0 *domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(string) *domain.LoginUserDO); ok {
+		r0 = rf(username)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.LoginUserDO)
+		}
+	}
+
+	var r1 bool
+	if rf, ok := ret.Get(1).(func(string) bool); ok {
+		r1 = rf(username)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+
+	return r0, r1
 }
 
 // FindSmsCode provides a mock function with given fields: mobile
@@ -32,13 +55,13 @@ func (_m *LoginUserRepo) FindSmsCode(mobile string) string {
 	return r0
 }
 
-// GetOne provides a mock function with given fields: username, tenantId
-func (_m *LoginUserRepo) GetOne(username string, tenantId string) *domain.LoginUserDO {
-	ret := _m.Called(username, tenantId)
+// GetOne provides a mock function with given fields: username
+func (_m *LoginUserRepo) GetOne(username string) *domain.LoginUserDO {
+	ret := _m.Called(username)
 
 	var r0 *domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string, string) *domain.LoginUserDO); ok {
-		r0 = rf(username, tenantId)
+	if rf, ok := ret.Get(0).(func(string) *domain.LoginUserDO); ok {
+		r0 = rf(username)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.LoginUserDO)

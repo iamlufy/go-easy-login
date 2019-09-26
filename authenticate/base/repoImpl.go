@@ -1,8 +1,21 @@
 package base
 
 import (
-	"oneday-infrastructure/login/domain"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"oneday-infrastructure/authenticate/domain"
 )
+
+var repo *gorm.DB
+
+func init() {
+	//TODO
+	db, err := gorm.Open("postgres", "host=localhost port=9000 user=oneday dbname=easy-login password=123456")
+	repo = db
+	if err != nil {
+		panic("failed to connect database")
+	}
+}
 
 type LoginUserRepoImpl struct {
 }
