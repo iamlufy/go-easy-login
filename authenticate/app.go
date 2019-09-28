@@ -1,4 +1,4 @@
-package application
+package authenticate
 
 import (
 	"oneday-infrastructure/authenticate/domain"
