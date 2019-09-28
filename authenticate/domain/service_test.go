@@ -119,14 +119,18 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return Existed", func() {
-					Expect(domain.AddUser(cmd)).To(Equal(domain.Existed))
+					Expect(domain.AddUser(cmd, func(username string) bool {
+						return true
+					})).To(Equal(domain.Existed))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
 
 			Context("where user is not existing", func() {
 				It("should return Success", func() {
-					Expect(domain.AddUser(cmd)).To(Equal(domain.Success))
+					Expect(domain.AddUser(cmd, func(username string) bool {
+						return false
+					})).To(Equal(domain.Success))
 					mockRepo.AssertExpectations(tt)
 				})
 

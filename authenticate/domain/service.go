@@ -1,7 +1,5 @@
 package domain
 
-import "errors"
-
 func Authenticate(cmd *LoginCmd) bool {
 	getCode := encryptCode(cmd.LoginMode)
 	return matcher(cmd.EncryptWay)(cmd.SourceCode, getCode(cmd.Username))
@@ -37,13 +35,12 @@ func CanLogin(username string) LoginAbleStatus {
 	return ALLOWED
 }
 
-func AddUser(cmd *AddLoginUserCmd) error {
-	_, existed := FindUser(cmd.Username)
-	if existed {
-		return errors.New("user had existed")
+func AddUser(cmd *AddLoginUserCmd, isExisted func(username string) bool) AddUserResult {
+	if isExisted(cmd.Username) {
+		return Existed
 	}
 	loginUserDO := ToLoginUserDO(cmd)
 	loginUserDO.Password = ChooseEncrypter(cmd.EncryptWay)(loginUserDO.Password)
 	Add(loginUserDO)
-	return nil
+	return Success
 }
