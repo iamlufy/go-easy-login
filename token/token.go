@@ -14,25 +14,41 @@ var tokenSecret = []byte("123")
 
 func Generate(uniqueCode string, effectiveSeconds int) string {
 	token := generateJwt(uniqueCode, int64(effectiveSeconds))
-	cacheToken(uniqueCode, token)
 	return token
 }
 
-func Verify(tokenString string) (bool, string) {
+func Verify(tokenString string) (*jwt.Token, error) {
+	//log error
 	token, e := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, e error) {
 		return tokenSecret, nil
 	})
-	if e != nil {
-		claim := token.Claims.(jwt.MapClaims)
-		code := claim["code"].(string)
-		if getCache(code) != "" {
-			return true, Generate(code, Second)
-		} else {
-			panic(e)
-		}
+	if token != nil {
+		return token, nil
+	} else {
+		return nil, e
 	}
 
-	return token.Valid, token.Raw
+}
+
+func VerifyAndRefresh(tokenString string) (string, bool) {
+	token, e := Verify(tokenString)
+	if e != nil {
+		//TODO fake token cause error,log
+		return "", false
+	}
+	claim := token.Claims.(jwt.MapClaims)
+	code := claim["code"].(string)
+	if token.Valid {
+		cacheToken(code, tokenString)
+		return tokenString, true
+	} else {
+		if getCache(code) != "" {
+			cacheToken(code, tokenString)
+			return Generate(code, Second), true
+		} else {
+			return "", false
+		}
+	}
 
 }
 

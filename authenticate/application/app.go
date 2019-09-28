@@ -2,11 +2,11 @@ package application
 
 import (
 	"oneday-infrastructure/authenticate/domain"
-	"oneday-infrastructure/token"
+	"oneday-infrastructure/authenticate/facade"
 )
 
 func Login(cmd *domain.LoginCmd) string {
-	//TODO return detail reason
+
 	if domain.CanLogin(cmd.Username) != domain.ALLOWED {
 		return ""
 	}
@@ -16,9 +16,13 @@ func Login(cmd *domain.LoginCmd) string {
 	}
 	code := domain.GetUniqueCode(cmd.Username)
 	//TODO event
-	return token.Generate(code, cmd.EffectiveSeconds)
+	return facade.GenerateToken(code, cmd.EffectiveSeconds)
 }
 
 func AddUser(cmd *domain.AddLoginUserCmd) {
-	domain.AddUser(cmd)
+
+	domain.AddUser(cmd, func(username string) bool {
+		_, exist := domain.FindUser(username)
+		return exist
+	})
 }
