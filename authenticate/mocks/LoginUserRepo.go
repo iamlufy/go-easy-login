@@ -14,8 +14,19 @@ type LoginUserRepo struct {
 }
 
 // Add provides a mock function with given fields: _a0
-func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) {
-	_m.Called(_a0)
+func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) *domain.LoginUserDO {
+	ret := _m.Called(_a0)
+
+	var r0 *domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO) *domain.LoginUserDO); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.LoginUserDO)
+		}
+	}
+
+	return r0
 }
 
 // FindOne provides a mock function with given fields: username
