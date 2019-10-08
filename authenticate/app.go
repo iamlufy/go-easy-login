@@ -22,9 +22,8 @@ func Login(cmd *domain.LoginCmd) (string, error) {
 	return facade.GenerateToken(code, cmd.EffectiveSeconds), nil
 }
 
-func AddUser(cmd *domain.AddLoginUserCmd) {
-
-	domain.AddUser(cmd, func(username string) bool {
+func AddUser(cmd *domain.AddLoginUserCmd) domain.AddUserResult {
+	return domain.AddUser(cmd, func(username string) bool {
 		_, exist := domain.FindUser(username)
 		return exist
 	})
