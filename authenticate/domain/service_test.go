@@ -74,7 +74,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return false", func() {
-					Expect(domain.CanLogin(cmd.Username)).To(Equal(domain.NotExist))
+					Expect(domain.GetUserStatus(cmd.Username)).To(Equal(domain.NotExist))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -86,7 +86,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return false", func() {
-					Expect(domain.CanLogin(cmd.Username)).To(Equal(domain.LOCKED))
+					Expect(domain.GetUserStatus(cmd.Username)).To(Equal(domain.LOCKED))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -98,7 +98,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return true", func() {
-					Expect(domain.CanLogin(cmd.Username)).To(Equal(domain.ALLOWED))
+					Expect(domain.GetUserStatus(cmd.Username)).To(Equal(domain.ALLOWED))
 					mockRepo.AssertExpectations(tt)
 
 				})

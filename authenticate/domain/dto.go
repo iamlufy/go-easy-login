@@ -27,11 +27,11 @@ func ToLoginUserDO(cmd *AddLoginUserCmd) *LoginUserDO {
 	}
 }
 
-type LoginAbleStatus string
+type UserStatus string
 
-const NotExist LoginAbleStatus = "Not_Exist"
-const ALLOWED LoginAbleStatus = "ALLOWED"
-const LOCKED LoginAbleStatus = "LOCKED"
+const NotExist UserStatus = "Not_Exist"
+const ALLOWED UserStatus = "ALLOWED"
+const LOCKED UserStatus = "LOCKED"
 
 type AddUserResult string
 

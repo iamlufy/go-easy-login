@@ -24,7 +24,7 @@ func encryptCode(loginMode string) func(string) string {
 	}
 }
 
-func CanLogin(username string) LoginAbleStatus {
+func GetUserStatus(username string) UserStatus {
 	userDO, existed := FindUser(username)
 	if !existed {
 		return NotExist
