@@ -27,27 +27,6 @@ func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) domain.LoginUserDO {
 	return r0
 }
 
-// FindByUsernameAndPassword provides a mock function with given fields: username, password
-func (_m *LoginUserRepo) FindByUsernameAndPassword(username string, password string) (domain.LoginUserDO, bool) {
-	ret := _m.Called(username, password)
-
-	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
-		r0 = rf(username, password)
-	} else {
-		r0 = ret.Get(0).(domain.LoginUserDO)
-	}
-
-	var r1 bool
-	if rf, ok := ret.Get(1).(func(string, string) bool); ok {
-		r1 = rf(username, password)
-	} else {
-		r1 = ret.Get(1).(bool)
-	}
-
-	return r0, r1
-}
-
 // FindOne provides a mock function with given fields: username
 func (_m *LoginUserRepo) FindOne(username string) (domain.LoginUserDO, bool) {
 	ret := _m.Called(username)
@@ -97,7 +76,16 @@ func (_m *LoginUserRepo) GetOne(username string) domain.LoginUserDO {
 	return r0
 }
 
-// Update provides a mock function with given fields:
-func (_m *LoginUserRepo) Update() {
-	_m.Called()
+// Update provides a mock function with given fields: model, updateFields
+func (_m *LoginUserRepo) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
+	ret := _m.Called(model, updateFields)
+
+	var r0 domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO, map[string]interface{}) domain.LoginUserDO); ok {
+		r0 = rf(model, updateFields)
+	} else {
+		r0 = ret.Get(0).(domain.LoginUserDO)
+	}
+
+	return r0
 }

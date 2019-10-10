@@ -17,15 +17,26 @@ type LoginCmd struct {
 	EncryptWay       string
 }
 
+type UpdatePasswordCmd struct {
+	Username    string
+	NewPassword string
+	OldPassword string
+	EncryptWay  string
+}
+
 func ToLoginUserDO(cmd *AddLoginUserCmd) *LoginUserDO {
 	return &LoginUserDO{
 		Username:   cmd.Username,
 		Password:   cmd.Password,
 		UniqueCode: cmd.UniqueCode,
-		IsLock:     true,
+		IsLock:     false,
 		Mobile:     cmd.mobile,
 	}
 }
+
+const Success = "SUCCESS"
+const Existing = "EXISTING"
+const NotExisting = "NOT_EXISTING"
 
 type UserStatus string
 
@@ -35,5 +46,11 @@ const LOCKED UserStatus = "LOCKED"
 
 type AddUserResult string
 
-const Success AddUserResult = "SUCCESS"
-const Existed AddUserResult = "EXISTED"
+const AddUserSuccess AddUserResult = Success
+const AddExistingUser AddUserResult = Existing
+
+type UpdatePasswordResult string
+
+const UpdatePasswordSuccess UpdatePasswordResult = Success
+const UpdateUserNotExisting UpdatePasswordResult = NotExisting
+const PasswordError UpdatePasswordResult = "PASSWORD_ERROR"

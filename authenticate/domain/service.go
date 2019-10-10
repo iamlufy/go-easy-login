@@ -36,11 +36,29 @@ func GetUserStatus(username string) UserStatus {
 }
 
 func AddUser(cmd *AddLoginUserCmd) AddUserResult {
-	if isExisted(cmd.Username) {
-		return Existed
+	if isUserExist(cmd.Username) {
+		return AddExistingUser
 	}
 	loginUserDO := ToLoginUserDO(cmd)
 	loginUserDO.Password = ChooseEncrypter(cmd.EncryptWay)(loginUserDO.Password)
 	Add(loginUserDO)
-	return Success
+	return AddUserSuccess
+}
+
+func SetNewPassword(cmd *UpdatePasswordCmd) UpdatePasswordResult {
+	user, existed := FindUser(cmd.Username)
+	if !existed {
+		return UpdateUserNotExisting
+	}
+	if ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword) != user.Password {
+		return PasswordError
+	}
+	user.Password = ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)
+	UpdatePassword(user)
+	return UpdatePasswordSuccess
+}
+
+func isUserExist(username string) bool {
+	_, exist := FindUser(username)
+	return exist
 }

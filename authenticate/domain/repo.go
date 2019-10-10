@@ -13,7 +13,7 @@ type LoginUserDO struct {
 type LoginUserRepo interface {
 	Add(*LoginUserDO) LoginUserDO
 	GetOne(username string) LoginUserDO
-	Update()
+	Update(model LoginUserDO, updateFields map[string]interface{}) LoginUserDO
 	FindOne(username string) (LoginUserDO, bool)
 	FindSmsCode(mobile string) string
 }
@@ -43,4 +43,8 @@ func FindSmsCode(mobile string) string {
 }
 func GetUniqueCode(username string) string {
 	return repo.GetOne(username).UniqueCode
+}
+
+func UpdatePassword(user LoginUserDO) LoginUserDO {
+	return repo.Update(user, map[string]interface{}{"password": user.Password})
 }

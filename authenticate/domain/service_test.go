@@ -118,8 +118,8 @@ var _ = Describe("service", func() {
 					mockRepo.On("FindOne", cmd.Username).Return(domain.LoginUserDO{}, true).Once()
 				})
 
-				It("should return Existed", func() {
-					Expect(domain.AddUser(cmd)).To(Equal(domain.Existed))
+				It("should return AddExistingUser", func() {
+					Expect(domain.AddUser(cmd)).To(Equal(domain.AddExistingUser))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -134,8 +134,8 @@ var _ = Describe("service", func() {
 					mockRepo.On("Add", userDo).Return(domain.LoginUserDO{}).Once()
 				})
 
-				It("should return Success", func() {
-					Expect(domain.AddUser(cmd)).To(Equal(domain.Success))
+				It("should return AddUserSuccess", func() {
+					Expect(domain.AddUser(cmd)).To(Equal(domain.AddUserSuccess))
 					mockRepo.AssertExpectations(tt)
 				})
 
@@ -147,30 +147,47 @@ var _ = Describe("service", func() {
 				Username:    "username",
 				NewPassword: "newPassword",
 				OldPassword: "oldPassword",
-				TenantCode:  "tenantCode",
 				EncryptWay:  "MD5",
 			}
 			When("user is existing", func() {
-				BeforeEach(func() {
-					mockRepo.On("FindByUsernameAndPassword", cmd.Username, domain.ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword)).
-						Return(domain.LoginUserDO{}, true).Once()
-					mockRepo.On("UpdatePassword", cmd.Username, domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)).
-						Return(domain.LoginUserDO{}).Once()
+				When("oldPassword is correct", func() {
+					BeforeEach(func() {
+						mockRepo.On("FindOne", cmd.Username).
+							Return(domain.LoginUserDO{Password: domain.ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword)}, true).Once()
+
+						mockRepo.On(
+							"Update",
+							&domain.LoginUserDO{Password: domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)},
+							map[string]interface{}{"password": domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)}).
+							Return(domain.LoginUserDO{}).Once()
+					})
+
+					It("should return success", func() {
+						Expect(domain.SetNewPassword(cmd)).To(Equal(domain.UpdatePasswordSuccess))
+						mockRepo.AssertExpectations(tt)
+					})
 				})
-				It("should return not exist", func() {
-					domain.UpdatePassword(cmd)
-					mockRepo.AssertExpectations(tt)
+
+				When("oldPassword is error", func() {
+					BeforeEach(func() {
+						mockRepo.On("FindOne", cmd.Username).
+							Return(domain.LoginUserDO{Password: ""}, true).Once()
+					})
+
+					It("should return success", func() {
+						Expect(domain.SetNewPassword(cmd)).To(Equal(domain.PasswordError))
+						mockRepo.AssertExpectations(tt)
+					})
 				})
+
 			})
 			When("user is nonexistent", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindByUsernameAndPassword", cmd.Username, domain.ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword)).
+					mockRepo.On("FindOne", cmd.Username).
 						Return(domain.LoginUserDO{}, false).Once()
-					mockRepo.On("UpdatePassword", cmd.Username, domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)).
-						Return(domain.LoginUserDO{}).Times(0)
 				})
 				It("should return not exist", func() {
-					domain.UpdatePassword(cmd)
+					domain.SetNewPassword(cmd)
 					mockRepo.AssertExpectations(tt)
 				})
 			})

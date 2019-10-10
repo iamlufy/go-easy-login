@@ -84,4 +84,26 @@ var _ = Describe("repoTest", func() {
 		})
 	})
 
+	Describe("update", func() {
+
+		var addUserDO domain.LoginUserDO
+		userDO := &domain.LoginUserDO{
+			Model:      gorm.Model{},
+			Username:   strconv.Itoa(rand.Intn(10000000)),
+			Password:   strconv.Itoa(rand.Intn(10000000)),
+			IsLock:     false,
+			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
+			Mobile:     "23456789011",
+		}
+
+		BeforeEach(func() {
+			addUserDO = repo.Add(userDO)
+		})
+
+		It("should return new user", func() {
+			repo.Update(addUserDO, map[string]interface{}{"password": "123"})
+			Expect(repo.GetOne(addUserDO.Username).Password).To(Equal("123"))
+		})
+	})
+
 })

@@ -46,16 +46,6 @@ type LoginUserRepoImpl struct {
 	*gorm.DB
 }
 
-func (l *LoginUserRepoImpl) FindByUsernameAndPassword(username, password string) (userDO domain.LoginUserDO, exist bool) {
-	l.Where("username=? and password=?", GetUsername(username), password).First(&userDO)
-	if userDO.ID == 0 {
-		exist = false
-	} else {
-		exist = true
-	}
-	return userDO, exist
-}
-
 func (l *LoginUserRepoImpl) GetOne(username string) domain.LoginUserDO {
 	userDO, exist := l.FindOne(username)
 	if !exist {
@@ -86,8 +76,8 @@ func (l *LoginUserRepoImpl) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
 	}
 }
 
-func (l *LoginUserRepoImpl) Update() {
-	panic("implement me")
+func (l *LoginUserRepoImpl) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
+	return *l.Model(&model).Updates(updateFields).Value.(*domain.LoginUserDO)
 }
 
 func (l *LoginUserRepoImpl) FindSmsCode(mobile string) string {

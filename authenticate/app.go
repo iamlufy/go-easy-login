@@ -23,8 +23,9 @@ func Login(cmd *domain.LoginCmd) (string, error) {
 }
 
 func AddUser(cmd *domain.AddLoginUserCmd) domain.AddUserResult {
-	return domain.AddUser(cmd, func(username string) bool {
-		_, exist := domain.FindUser(username)
-		return exist
-	})
+	return domain.AddUser(cmd)
+}
+
+func SetPassword(cmd *domain.UpdatePasswordCmd) domain.UpdatePasswordResult {
+	return domain.SetNewPassword(cmd)
 }
