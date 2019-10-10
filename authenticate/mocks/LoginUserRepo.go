@@ -14,32 +14,49 @@ type LoginUserRepo struct {
 }
 
 // Add provides a mock function with given fields: _a0
-func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) *domain.LoginUserDO {
+func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) domain.LoginUserDO {
 	ret := _m.Called(_a0)
 
-	var r0 *domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO) *domain.LoginUserDO); ok {
+	var r0 domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO) domain.LoginUserDO); ok {
 		r0 = rf(_a0)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.LoginUserDO)
-		}
+		r0 = ret.Get(0).(domain.LoginUserDO)
 	}
 
 	return r0
 }
 
+// FindByUsernameAndPassword provides a mock function with given fields: username, password
+func (_m *LoginUserRepo) FindByUsernameAndPassword(username string, password string) (domain.LoginUserDO, bool) {
+	ret := _m.Called(username, password)
+
+	var r0 domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
+		r0 = rf(username, password)
+	} else {
+		r0 = ret.Get(0).(domain.LoginUserDO)
+	}
+
+	var r1 bool
+	if rf, ok := ret.Get(1).(func(string, string) bool); ok {
+		r1 = rf(username, password)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+
+	return r0, r1
+}
+
 // FindOne provides a mock function with given fields: username
-func (_m *LoginUserRepo) FindOne(username string) (*domain.LoginUserDO, bool) {
+func (_m *LoginUserRepo) FindOne(username string) (domain.LoginUserDO, bool) {
 	ret := _m.Called(username)
 
-	var r0 *domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string) *domain.LoginUserDO); ok {
+	var r0 domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(string) domain.LoginUserDO); ok {
 		r0 = rf(username)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.LoginUserDO)
-		}
+		r0 = ret.Get(0).(domain.LoginUserDO)
 	}
 
 	var r1 bool
@@ -67,16 +84,14 @@ func (_m *LoginUserRepo) FindSmsCode(mobile string) string {
 }
 
 // GetOne provides a mock function with given fields: username
-func (_m *LoginUserRepo) GetOne(username string) *domain.LoginUserDO {
+func (_m *LoginUserRepo) GetOne(username string) domain.LoginUserDO {
 	ret := _m.Called(username)
 
-	var r0 *domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string) *domain.LoginUserDO); ok {
+	var r0 domain.LoginUserDO
+	if rf, ok := ret.Get(0).(func(string) domain.LoginUserDO); ok {
 		r0 = rf(username)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.LoginUserDO)
-		}
+		r0 = ret.Get(0).(domain.LoginUserDO)
 	}
 
 	return r0

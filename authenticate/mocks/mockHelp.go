@@ -12,3 +12,7 @@ func InstanceMethod(target interface{}, methodName string, replacement interface
 func ResetMethod(target interface{}, method string) {
 	monkey.UnpatchInstanceMethod(reflect.TypeOf(target), method)
 }
+
+func MockFunc(target interface{}, replaceFunc interface{}) {
+	monkey.Patch(target, replaceFunc)
+}

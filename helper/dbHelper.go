@@ -3,11 +3,10 @@ package helper
 import (
 	"github.com/jinzhu/gorm"
 	"oneday-infrastructure/authenticate/domain"
+	"time"
 )
 
-type Close func() error
-
-func GetDb(service string) (*gorm.DB, Close) {
+func GetDb(service string) *gorm.DB {
 	//TODO get config by service
 	//TODO connection pool or prevent to build connection every time
 	db, err := gorm.Open(getConfig(""))
@@ -16,9 +15,8 @@ func GetDb(service string) (*gorm.DB, Close) {
 	}
 	// Migrate the schema
 	db.AutoMigrate(&domain.LoginUserDO{})
-	return db, func() error {
-		return db.Close()
-	}
+	db.DB().SetConnMaxLifetime(time.Second / 2)
+	return db
 }
 
 //TODO add to config.yml
