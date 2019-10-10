@@ -2,6 +2,7 @@ package domain
 
 import (
 	"crypto/md5"
+	"fmt"
 )
 
 type Matcher func(source, encryptedString string) bool
@@ -36,5 +37,5 @@ func ChooseMatcher(way string) Matcher {
 func md5Encrypt(password string) string {
 	data := []byte(password)
 	md5Bytes := md5.Sum(data)
-	return string(md5Bytes[:])
+	return fmt.Sprintf("%x", md5Bytes)
 }

@@ -35,7 +35,7 @@ func GetUserStatus(username string) UserStatus {
 	return ALLOWED
 }
 
-func AddUser(cmd *AddLoginUserCmd, isExisted func(username string) bool) AddUserResult {
+func AddUser(cmd *AddLoginUserCmd) AddUserResult {
 	if isExisted(cmd.Username) {
 		return Existed
 	}
