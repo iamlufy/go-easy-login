@@ -110,7 +110,6 @@ var _ = Describe("service", func() {
 				Username:   "username",
 				Password:   "password",
 				EncryptWay: "MD5",
-				TenantId:   "",
 				UniqueCode: "",
 			}
 			When(" user had existed", func() {

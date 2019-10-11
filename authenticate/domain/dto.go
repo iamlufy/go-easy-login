@@ -4,7 +4,6 @@ type AddLoginUserCmd struct {
 	Username   string
 	Password   string
 	EncryptWay string
-	TenantId   string
 	UniqueCode string
 	mobile     string
 }
