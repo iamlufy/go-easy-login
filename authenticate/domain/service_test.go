@@ -141,7 +141,7 @@ var _ = Describe("service", func() {
 			})
 		})
 
-		Describe("update user password", func() {
+		Describe("reset user password", func() {
 			cmd := &domain.ResetPasswordCmd{
 				Username:    "username",
 				NewPassword: "newPassword",
@@ -156,7 +156,7 @@ var _ = Describe("service", func() {
 
 						mockRepo.On(
 							"Update",
-							&domain.LoginUserDO{Password: domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)},
+							domain.LoginUserDO{Password: domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)},
 							map[string]interface{}{"password": domain.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)}).
 							Return(domain.LoginUserDO{}).Once()
 					})

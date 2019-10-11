@@ -81,7 +81,7 @@ func (_m *LoginUserRepo) Update(model domain.LoginUserDO, updateFields map[strin
 	ret := _m.Called(model, updateFields)
 
 	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO, map[string]interface{}) domain.LoginUserDO); ok {
+	if rf, ok := ret.Get(0).(func(domain.LoginUserDO, map[string]interface{}) domain.LoginUserDO); ok {
 		r0 = rf(model, updateFields)
 	} else {
 		r0 = ret.Get(0).(domain.LoginUserDO)
