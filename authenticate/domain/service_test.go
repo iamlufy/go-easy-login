@@ -143,7 +143,7 @@ var _ = Describe("service", func() {
 		})
 
 		Describe("update user password", func() {
-			cmd := &domain.UpdatePasswordCmd{
+			cmd := &domain.ResetPasswordCmd{
 				Username:    "username",
 				NewPassword: "newPassword",
 				OldPassword: "oldPassword",
@@ -163,7 +163,7 @@ var _ = Describe("service", func() {
 					})
 
 					It("should return success", func() {
-						Expect(domain.SetNewPassword(cmd)).To(Equal(domain.UpdatePasswordSuccess))
+						Expect(domain.ReSetPassword(cmd)).To(Equal(domain.ResetPasswordSuccess))
 						mockRepo.AssertExpectations(tt)
 					})
 				})
@@ -175,7 +175,7 @@ var _ = Describe("service", func() {
 					})
 
 					It("should return success", func() {
-						Expect(domain.SetNewPassword(cmd)).To(Equal(domain.PasswordError))
+						Expect(domain.ReSetPassword(cmd)).To(Equal(domain.PasswordError))
 						mockRepo.AssertExpectations(tt)
 					})
 				})
@@ -187,7 +187,7 @@ var _ = Describe("service", func() {
 						Return(domain.LoginUserDO{}, false).Once()
 				})
 				It("should return not exist", func() {
-					domain.SetNewPassword(cmd)
+					domain.ReSetPassword(cmd)
 					mockRepo.AssertExpectations(tt)
 				})
 			})

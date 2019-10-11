@@ -17,7 +17,7 @@ type LoginCmd struct {
 	EncryptWay       string
 }
 
-type UpdatePasswordCmd struct {
+type ResetPasswordCmd struct {
 	Username    string
 	NewPassword string
 	OldPassword string
@@ -49,8 +49,8 @@ type AddUserResult string
 const AddUserSuccess AddUserResult = Success
 const AddExistingUser AddUserResult = Existing
 
-type UpdatePasswordResult string
+type ResetPasswordResult string
 
-const UpdatePasswordSuccess UpdatePasswordResult = Success
-const UpdateUserNotExisting UpdatePasswordResult = NotExisting
-const PasswordError UpdatePasswordResult = "PASSWORD_ERROR"
+const ResetPasswordSuccess ResetPasswordResult = Success
+const UserNotExisting ResetPasswordResult = NotExisting
+const PasswordError ResetPasswordResult = "PASSWORD_ERROR"

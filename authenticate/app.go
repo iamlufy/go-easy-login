@@ -26,6 +26,6 @@ func AddUser(cmd *domain.AddLoginUserCmd) domain.AddUserResult {
 	return domain.AddUser(cmd)
 }
 
-func SetPassword(cmd *domain.UpdatePasswordCmd) domain.UpdatePasswordResult {
-	return domain.SetNewPassword(cmd)
+func ReSetPassword(cmd *domain.ResetPasswordCmd) domain.ResetPasswordResult {
+	return domain.ReSetPassword(cmd)
 }
