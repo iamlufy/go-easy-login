@@ -3,8 +3,7 @@ module oneday-infrastructure
 go 1.12
 
 require (
-	github.com/99designs/gqlgen v0.9.3
-	github.com/DATA-DOG/godog v0.7.13 // indirect
+	bou.ke/monkey v1.0.1
 	github.com/bouk/monkey v1.0.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20190924004331-208c0a498538 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

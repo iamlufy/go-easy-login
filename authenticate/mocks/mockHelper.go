@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/bouk/monkey"
+	"bou.ke/monkey"
 	"reflect"
 )
 

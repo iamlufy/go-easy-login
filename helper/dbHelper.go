@@ -2,7 +2,9 @@ package helper
 
 import (
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"oneday-infrastructure/authenticate/domain"
+	tenant_domain "oneday-infrastructure/tenant/domain"
 	"time"
 )
 
@@ -11,10 +13,10 @@ func GetDb(service string) *gorm.DB {
 	//TODO connection pool or prevent to build connection every time
 	db, err := gorm.Open(getConfig(""))
 	if err != nil {
-		panic("failed to connect database")
+		panic(err)
 	}
 	// Migrate the schema
-	db.AutoMigrate(&domain.LoginUserDO{})
+	db.AutoMigrate(&domain.LoginUserDO{}, &tenant_domain.TenantDO{})
 	db.DB().SetConnMaxLifetime(time.Second / 2)
 	return db
 }
