@@ -48,7 +48,7 @@ func AddUser(cmd *AddLoginUserCmd) AddUserResult {
 func ReSetPassword(cmd *ResetPasswordCmd) ResetPasswordResult {
 	user, existed := FindUser(cmd.Username)
 	if !existed {
-		return UpdateUserNotExisting
+		return UserNotExisting
 	}
 	if ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword) != user.Password {
 		return PasswordError
