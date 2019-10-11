@@ -8,22 +8,23 @@ import (
 	"strings"
 )
 
-var repo domain.LoginUserRepo
+var repo Repo
+
+type Repo struct {
+	PsqlTunnel
+}
+
+type PsqlTunnel struct {
+	*gorm.DB
+}
 
 func init() {
-	NewRepo(func(name string) *gorm.DB {
-		return helper.GetDb(name)
-	})
+	repo = NewRepo()
 }
 
-func NewRepo(getDb func(name string) *gorm.DB) domain.LoginUserRepo {
-	db := getDb("authenticate")
-	repo = &LoginUserRepoImpl{DB: db}
-	return repo
-}
-
-func GetRepo() domain.LoginUserRepo {
-	return repo
+func NewRepo() Repo {
+	return Repo{
+		PsqlTunnel{DB: helper.GetDb("authenticate")}}
 }
 
 func GetUsername(username string) string {
@@ -42,11 +43,7 @@ func getTenantCode() string {
 	return "" + "_"
 }
 
-type LoginUserRepoImpl struct {
-	*gorm.DB
-}
-
-func (l *LoginUserRepoImpl) GetOne(username string) domain.LoginUserDO {
+func (l *PsqlTunnel) GetOne(username string) domain.LoginUserDO {
 	userDO, exist := l.FindOne(username)
 	if !exist {
 		panic("can not find")
@@ -54,7 +51,7 @@ func (l *LoginUserRepoImpl) GetOne(username string) domain.LoginUserDO {
 	return userDO
 }
 
-func (l *LoginUserRepoImpl) FindOne(username string) (userDO domain.LoginUserDO, exist bool) {
+func (l *PsqlTunnel) FindOne(username string) (userDO domain.LoginUserDO, exist bool) {
 	l.Where("username=?", GetUsername(username)).First(&userDO)
 	if userDO.ID == 0 {
 		exist = false
@@ -64,7 +61,7 @@ func (l *LoginUserRepoImpl) FindOne(username string) (userDO domain.LoginUserDO,
 	return userDO, exist
 }
 
-func (l *LoginUserRepoImpl) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
+func (l *PsqlTunnel) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
 	userDO.Username = GetUsername(userDO.Username)
 	result := l.Create(userDO)
 	if result.Error != nil {
@@ -76,10 +73,10 @@ func (l *LoginUserRepoImpl) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
 	}
 }
 
-func (l *LoginUserRepoImpl) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
+func (l *PsqlTunnel) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
 	return *l.Model(&model).Updates(updateFields).Value.(*domain.LoginUserDO)
 }
 
-func (l *LoginUserRepoImpl) FindSmsCode(mobile string) string {
+func (l *PsqlTunnel) FindSmsCode(mobile string) string {
 	panic("implement me")
 }

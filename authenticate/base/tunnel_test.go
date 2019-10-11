@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"oneday-infrastructure/authenticate/base"
 	"oneday-infrastructure/authenticate/domain"
-	"oneday-infrastructure/helper"
 	"strconv"
 	"testing"
 	"time"
@@ -15,8 +14,7 @@ import (
 
 var tt *testing.T
 
-var repo domain.LoginUserRepo
-var db *gorm.DB
+var repo base.Repo
 
 func TestRepo(t *testing.T) {
 	tt = t
@@ -28,14 +26,11 @@ var _ = Describe("repoTest", func() {
 	rand.Seed(time.Now().UnixNano())
 
 	BeforeEach(func() {
-		repo = base.NewRepo(func(name string) *gorm.DB {
-			db = helper.GetDb(name)
-			db = db.Begin()
-			return db
-		})
+		repo = base.NewRepo()
+		repo.DB = repo.DB.Begin()
 	})
 	AfterEach(func() {
-		db.Rollback()
+		repo.DB.Rollback()
 	})
 
 	Context("Add", func() {

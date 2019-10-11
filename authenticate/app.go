@@ -3,18 +3,9 @@ package authenticate
 import (
 	"errors"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"oneday-infrastructure/authenticate/base"
 	"oneday-infrastructure/authenticate/domain"
 	"oneday-infrastructure/authenticate/facade"
-	"oneday-infrastructure/helper"
 )
-
-func init() {
-	domain.NewRepo(base.NewRepo(func(name string) *gorm.DB {
-		return helper.GetDb(name)
-	}))
-}
 
 func Login(cmd *domain.LoginCmd) (string, error) {
 
