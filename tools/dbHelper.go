@@ -1,10 +1,10 @@
-package helper
+package tools
 
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"oneday-infrastructure/authenticate/domain"
-	tenant_domain "oneday-infrastructure/tenant/domain"
+	"oneday-infrastructure/internal/pkg/authenticate/domain"
+	tenant_domain "oneday-infrastructure/internal/pkg/tenant/domain"
 	"time"
 )
 

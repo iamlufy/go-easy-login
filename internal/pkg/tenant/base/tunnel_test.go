@@ -1,10 +1,11 @@
 package base
 
 import (
+	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"math/rand"
-	tenant_domain "oneday-infrastructure/tenant/domain"
+	"oneday-infrastructure/internal/pkg/tenant/domain"
 	"strconv"
 	"testing"
 	"time"
@@ -20,14 +21,14 @@ func TestTunnel(t *testing.T) {
 
 var _ = Describe("tunnel test", func() {
 	rand.Seed(time.Now().UnixNano())
-
+	var DB *gorm.DB
 	BeforeEach(func() {
-		repo = NewRepo()
-		repo.DB = repo.DB.Begin()
+		tenantRepo = NewRepo()
+		DB = tenantRepo.Begin()
 	})
 
 	AfterEach(func() {
-		repo.DB.Rollback()
+		DB.Rollback()
 	})
 
 	Context("Add", func() {
@@ -37,7 +38,7 @@ var _ = Describe("tunnel test", func() {
 		}
 
 		It("should return with ID ", func() {
-			Expect(repo.Add(tenant).ID).NotTo(Equal(0))
+			Expect(tenantRepo.Add(tenant).ID).NotTo(Equal(0))
 		})
 	})
 
@@ -48,11 +49,11 @@ var _ = Describe("tunnel test", func() {
 		}
 
 		BeforeEach(func() {
-			repo.Add(tenant)
+			tenantRepo.Add(tenant)
 		})
 
 		It("should return tenant", func() {
-			Expect(repo.FindByName(tenant.TenantName).TenantName).To(Equal(tenant.TenantName))
+			Expect(tenantRepo.FindByName(tenant.TenantName).TenantName).To(Equal(tenant.TenantName))
 		})
 	})
 })

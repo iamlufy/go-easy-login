@@ -3,8 +3,8 @@ package base
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"oneday-infrastructure/authenticate/domain"
-	"oneday-infrastructure/helper"
+	domain2 "oneday-infrastructure/internal/pkg/authenticate/domain"
+	"oneday-infrastructure/tools"
 	"strings"
 )
 
@@ -24,7 +24,7 @@ func init() {
 
 func NewRepo() Repo {
 	return Repo{
-		PsqlTunnel{DB: helper.GetDb("authenticate")}}
+		PsqlTunnel{DB: tools.GetDb("authenticate")}}
 }
 
 func GetUsername(username string) string {
@@ -43,7 +43,7 @@ func getTenantCode() string {
 	return "" + "_"
 }
 
-func (l *PsqlTunnel) GetOne(username string) domain.LoginUserDO {
+func (l *PsqlTunnel) GetOne(username string) domain2.LoginUserDO {
 	userDO, exist := l.FindOne(username)
 	if !exist {
 		panic("can not find")
@@ -51,7 +51,7 @@ func (l *PsqlTunnel) GetOne(username string) domain.LoginUserDO {
 	return userDO
 }
 
-func (l *PsqlTunnel) FindOne(username string) (userDO domain.LoginUserDO, exist bool) {
+func (l *PsqlTunnel) FindOne(username string) (userDO domain2.LoginUserDO, exist bool) {
 	l.Where("username=?", GetUsername(username)).First(&userDO)
 	if userDO.ID == 0 {
 		exist = false
@@ -61,20 +61,20 @@ func (l *PsqlTunnel) FindOne(username string) (userDO domain.LoginUserDO, exist 
 	return userDO, exist
 }
 
-func (l *PsqlTunnel) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
+func (l *PsqlTunnel) Add(userDO *domain2.LoginUserDO) domain2.LoginUserDO {
 	userDO.Username = GetUsername(userDO.Username)
 	result := l.Create(userDO)
 	if result.Error != nil {
 		panic(result.Error)
 	} else {
-		createUserDO := result.Value.(*domain.LoginUserDO)
+		createUserDO := result.Value.(*domain2.LoginUserDO)
 		createUserDO.Username = InitUsername(createUserDO.Username)
 		return *createUserDO
 	}
 }
 
-func (l *PsqlTunnel) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
-	return *l.Model(&model).Updates(updateFields).Value.(*domain.LoginUserDO)
+func (l *PsqlTunnel) Update(model domain2.LoginUserDO, updateFields map[string]interface{}) domain2.LoginUserDO {
+	return *l.Model(&model).Updates(updateFields).Value.(*domain2.LoginUserDO)
 }
 
 func (l *PsqlTunnel) FindSmsCode(mobile string) string {

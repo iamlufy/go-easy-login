@@ -3,7 +3,7 @@ package tenant_domain
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"oneday-infrastructure/authenticate/mocks"
+	"oneday-infrastructure/internal/pkg/authenticate/mocks"
 	"testing"
 )
 

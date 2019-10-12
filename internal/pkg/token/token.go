@@ -2,7 +2,7 @@ package token
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"oneday-infrastructure/authenticate/base/cache"
+	"oneday-infrastructure/internal/pkg/authenticate/base/cache"
 	"time"
 )
 

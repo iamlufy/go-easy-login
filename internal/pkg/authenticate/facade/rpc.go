@@ -1,6 +1,8 @@
 package facade
 
-import "oneday-infrastructure/token"
+import (
+	"oneday-infrastructure/internal/pkg/token"
+)
 
 func IsUserExisting(tenantCode, username string) bool {
 	return true

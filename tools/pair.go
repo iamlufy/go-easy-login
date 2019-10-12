@@ -1,4 +1,4 @@
-package util
+package tools
 
 type Pair struct {
 	key   uint

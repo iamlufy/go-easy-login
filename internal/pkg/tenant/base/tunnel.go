@@ -2,8 +2,8 @@ package base
 
 import (
 	"github.com/jinzhu/gorm"
-	"oneday-infrastructure/helper"
-	"oneday-infrastructure/tenant/domain"
+	"oneday-infrastructure/internal/pkg/tenant/domain"
+	"oneday-infrastructure/tools"
 )
 
 type TenantPsqlTunnel struct {
@@ -14,15 +14,15 @@ type TenantRepo struct {
 	TenantPsqlTunnel
 }
 
-var repo TenantRepo
+var tenantRepo TenantRepo
 
 func init() {
-	repo = NewRepo()
+	tenantRepo = NewRepo()
 }
 
 func NewRepo() TenantRepo {
 	return TenantRepo{
-		TenantPsqlTunnel{DB: helper.GetDb("tenant")}}
+		TenantPsqlTunnel{DB: tools.GetDb("tenant")}}
 }
 
 func (psql TenantPsqlTunnel) Add(do *tenant_domain.TenantDO) tenant_domain.TenantDO {

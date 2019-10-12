@@ -5,8 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"math/rand"
-	"oneday-infrastructure/authenticate/base"
-	"oneday-infrastructure/authenticate/domain"
+	domain2 "oneday-infrastructure/internal/pkg/authenticate/domain"
 	"strconv"
 	"testing"
 	"time"
@@ -14,7 +13,7 @@ import (
 
 var tt *testing.T
 
-var repo base.Repo
+var repo Repo
 
 func TestRepo(t *testing.T) {
 	tt = t
@@ -26,7 +25,7 @@ var _ = Describe("repoTest", func() {
 	rand.Seed(time.Now().UnixNano())
 
 	BeforeEach(func() {
-		repo = base.NewRepo()
+		repo = NewRepo()
 		repo.DB = repo.DB.Begin()
 	})
 	AfterEach(func() {
@@ -34,7 +33,7 @@ var _ = Describe("repoTest", func() {
 	})
 
 	Context("Add", func() {
-		userDO := &domain.LoginUserDO{
+		userDO := &domain2.LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
@@ -48,8 +47,8 @@ var _ = Describe("repoTest", func() {
 	})
 
 	Describe("GenOne", func() {
-		var addUserDO domain.LoginUserDO
-		userDO := &domain.LoginUserDO{
+		var addUserDO domain2.LoginUserDO
+		userDO := &domain2.LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
@@ -81,8 +80,8 @@ var _ = Describe("repoTest", func() {
 
 	Describe("update", func() {
 
-		var addUserDO domain.LoginUserDO
-		userDO := &domain.LoginUserDO{
+		var addUserDO domain2.LoginUserDO
+		userDO := &domain2.LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
