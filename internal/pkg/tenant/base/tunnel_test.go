@@ -1,11 +1,11 @@
 package base
 
 import (
-	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"math/rand"
 	"oneday-infrastructure/internal/pkg/tenant/domain"
+	"oneday-infrastructure/tools"
 	"strconv"
 	"testing"
 	"time"
@@ -21,18 +21,18 @@ func TestTunnel(t *testing.T) {
 
 var _ = Describe("tunnel test", func() {
 	rand.Seed(time.Now().UnixNano())
-	var DB *gorm.DB
+	var tenantRepo TenantRepo
 	BeforeEach(func() {
-		tenantRepo = NewRepo()
-		DB = tenantRepo.Begin()
+		tenantRepo = InitTenantRepo(tools.OpenDB)
+		tenantRepo.DB = tenantRepo.Begin()
 	})
 
 	AfterEach(func() {
-		DB.Rollback()
+		tenantRepo.DB.Rollback()
 	})
 
 	Context("Add", func() {
-		tenant := &tenant_domain.TenantDO{
+		tenant := &domain.TenantDO{
 			TenantName: strconv.Itoa(rand.Intn(10000000)),
 			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
 		}
@@ -43,7 +43,7 @@ var _ = Describe("tunnel test", func() {
 	})
 
 	Context("FindByName", func() {
-		tenant := &tenant_domain.TenantDO{
+		tenant := &domain.TenantDO{
 			TenantName: strconv.Itoa(rand.Intn(10000000)),
 			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
 		}

@@ -1,53 +1,69 @@
-package tenant_domain
+package domain_test
 
 import (
+	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"oneday-infrastructure/internal/pkg/authenticate/mocks"
+	. "oneday-infrastructure/internal/pkg/tenant/domain"
+	"oneday-infrastructure/mocks"
 	"testing"
 )
 
 var tt *testing.T
 
-var mockRepo string
+var mockRepo = &mocks.TenantRepo{}
+
+func init() {
+	InitTenantRepo(mockRepo)
+}
 
 func TestTenant(t *testing.T) {
 	tt = t
+
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "tenant Suite")
 
 }
 
 var _ = Describe("tenant service", func() {
+	var service TenantService
+	BeforeSuite(func() {
+		service = InitTenantService(mockRepo)
+	})
 
 	Describe("Add tenant", func() {
-		var cmd *AddTenantCmd
+		cmd := &AddTenantCmd{TenantName: "TenantName"}
+		newTenantCO := TenantCO{UniqueCode: "code", TenantName: "TenantName"}
+		newTenantDO := ToTenantDO(cmd)
 
-		newTenantCO := TenantCO{UniqueCode: "code", TenantName: "name"}
-		newTenantDO := &TenantDO{UniqueCode: "code", TenantName: "name"}
+		genUniqueCode := func() string { return "code" }
+		newTenantDO.UniqueCode = genUniqueCode()
+
 		When("tenant does not exist", func() {
 			BeforeEach(func() {
-				cmd = &AddTenantCmd{TenantName: "TenantName"}
-				mocks.MockFunc(find, func(string) (TenantDO, bool) { return TenantDO{}, false })
-				mocks.MockFunc(add, func(do *TenantDO) TenantDO { return *newTenantDO })
-				add(newTenantDO)
+				mockRepo.On("Add", newTenantDO).Return(*newTenantDO).Once()
+				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{}).Once()
 			})
 
 			It("should return success", func() {
-				co, result := AddTenant(cmd)
+				co, result := service.AddTenant(cmd, genUniqueCode)
 				Expect(result).To(Equal(AddSuccess))
 				Expect(co).To(Equal(newTenantCO))
+
+				mockRepo.AssertExpectations(tt)
 			})
 		})
 
 		When("tenant had existed", func() {
 			BeforeEach(func() {
 				cmd = &AddTenantCmd{TenantName: "TenantName"}
-				mocks.MockFunc(find, func(string) (TenantDO, bool) { return TenantDO{}, true })
+				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{
+					Model: gorm.Model{ID: 1},
+				}).Once()
 			})
 
 			It("should return existed", func() {
-				_, result := AddTenant(cmd)
+				_, result := service.AddTenant(cmd, genUniqueCode)
 				Expect(result == TenantExist).To(BeTrue())
 			})
 		})

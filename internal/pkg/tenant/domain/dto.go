@@ -1,4 +1,4 @@
-package tenant_domain
+package domain
 
 type AddTenantCmd struct {
 	TenantName string

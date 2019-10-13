@@ -3,24 +3,29 @@ package domain_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	mocks2 "oneday-infrastructure/internal/pkg/authenticate/mocks"
+	. "oneday-infrastructure/internal/pkg/authenticate/domain"
+	"oneday-infrastructure/mocks"
 	"testing"
 )
 
 var tt *testing.T
 
-var mockRepo *mocks2.LoginUserRepo
+var mockRepo *mocks.LoginUserRepo
 
 func TestLogin(t *testing.T) {
 	tt = t
-	mockRepo = &mocks2.LoginUserRepo{}
+	mockRepo = &mocks.LoginUserRepo{}
 	mockRepo.Test(t)
-	NewRepo(mockRepo)
+	InitLoginUserRepo(mockRepo)
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "authenticate Suite")
 }
 
 var _ = Describe("service", func() {
+	var service LoginUserService
+	BeforeSuite(func() {
+		service = InitLoginUserService(mockRepo)
+	})
 
 	Context("Authenticate", func() {
 		var cmd = &LoginCmd{
@@ -46,7 +51,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return true ", func() {
-					Expect(Authenticate(cmd)).To(BeTrue())
+					Expect(service.Authenticate(cmd)).To(BeTrue())
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -60,7 +65,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return true ", func() {
-					Expect(Authenticate(cmd)).To(BeTrue())
+					Expect(service.Authenticate(cmd)).To(BeTrue())
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -73,7 +78,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return false", func() {
-					Expect(GetUserStatus(cmd.Username)).To(Equal(NotExist))
+					Expect(service.GetUserStatus(cmd.Username)).To(Equal(NotExist))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -85,7 +90,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return false", func() {
-					Expect(GetUserStatus(cmd.Username)).To(Equal(LOCKED))
+					Expect(service.GetUserStatus(cmd.Username)).To(Equal(LOCKED))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -97,7 +102,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return true", func() {
-					Expect(GetUserStatus(cmd.Username)).To(Equal(ALLOWED))
+					Expect(service.GetUserStatus(cmd.Username)).To(Equal(ALLOWED))
 					mockRepo.AssertExpectations(tt)
 
 				})
@@ -117,7 +122,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return AddExistingUser", func() {
-					Expect(AddUser(cmd)).To(Equal(AddExistingUser))
+					Expect(service.AddUser(cmd)).To(Equal(AddExistingUser))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -133,7 +138,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return AddUserSuccess", func() {
-					Expect(AddUser(cmd)).To(Equal(AddUserSuccess))
+					Expect(service.AddUser(cmd)).To(Equal(AddUserSuccess))
 					mockRepo.AssertExpectations(tt)
 				})
 
@@ -161,7 +166,7 @@ var _ = Describe("service", func() {
 					})
 
 					It("should return success", func() {
-						Expect(ReSetPassword(cmd)).To(Equal(ResetPasswordSuccess))
+						Expect(service.ReSetPassword(cmd)).To(Equal(ResetPasswordSuccess))
 						mockRepo.AssertExpectations(tt)
 					})
 				})
@@ -173,7 +178,7 @@ var _ = Describe("service", func() {
 					})
 
 					It("should return success", func() {
-						Expect(ReSetPassword(cmd)).To(Equal(PasswordError))
+						Expect(service.ReSetPassword(cmd)).To(Equal(PasswordError))
 						mockRepo.AssertExpectations(tt)
 					})
 				})
@@ -185,7 +190,7 @@ var _ = Describe("service", func() {
 						Return(LoginUserDO{}, false).Once()
 				})
 				It("should return not exist", func() {
-					ReSetPassword(cmd)
+					service.ReSetPassword(cmd)
 					mockRepo.AssertExpectations(tt)
 				})
 			})

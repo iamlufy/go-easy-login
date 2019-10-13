@@ -1,6 +1,8 @@
-package tenant_domain
+package domain
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type TenantDO struct {
 	gorm.Model
@@ -15,8 +17,9 @@ type TenantRepo interface {
 
 var repo TenantRepo
 
-func NewRepo(tenantRepo TenantRepo) {
+func InitTenantRepo(tenantRepo TenantRepo) TenantRepo {
 	repo = tenantRepo
+	return repo
 }
 
 func getRepo() TenantRepo {

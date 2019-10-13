@@ -3,7 +3,6 @@ package base
 import (
 	"github.com/jinzhu/gorm"
 	"oneday-infrastructure/internal/pkg/tenant/domain"
-	"oneday-infrastructure/tools"
 )
 
 type TenantPsqlTunnel struct {
@@ -14,27 +13,21 @@ type TenantRepo struct {
 	TenantPsqlTunnel
 }
 
-var tenantRepo TenantRepo
-
-func init() {
-	tenantRepo = NewRepo()
-}
-
-func NewRepo() TenantRepo {
+func InitTenantRepo(getDB func(string) *gorm.DB) TenantRepo {
 	return TenantRepo{
-		TenantPsqlTunnel{DB: tools.GetDb("tenant")}}
+		TenantPsqlTunnel{DB: getDB("tenant")}}
 }
 
-func (psql TenantPsqlTunnel) Add(do *tenant_domain.TenantDO) tenant_domain.TenantDO {
+func (psql TenantPsqlTunnel) Add(do *domain.TenantDO) domain.TenantDO {
 	result := psql.Create(do)
 	if result.Error != nil {
 		panic(result.Error)
 	} else {
-		return *result.Value.(*tenant_domain.TenantDO)
+		return *result.Value.(*domain.TenantDO)
 	}
 }
 
-func (psql TenantPsqlTunnel) FindByName(tenantName string) (tenant tenant_domain.TenantDO) {
+func (psql TenantPsqlTunnel) FindByName(tenantName string) (tenant domain.TenantDO) {
 	psql.Where("tenant_name=?", tenantName).First(&tenant)
 	return tenant
 

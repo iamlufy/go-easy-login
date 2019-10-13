@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GetDb(service string) *gorm.DB {
+func OpenDB(service string) *gorm.DB {
 	//TODO get config by service
 	//TODO connection pool or prevent to build connection every time
 	db, err := gorm.Open(getConfig(""))

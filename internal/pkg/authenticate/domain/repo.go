@@ -20,31 +20,34 @@ type LoginUserRepo interface {
 
 var repo LoginUserRepo
 
-// TODO inject more elegant
-func NewRepo(loginUserRepo LoginUserRepo) {
+func InitLoginUserRepo(loginUserRepo LoginUserRepo) {
 	repo = loginUserRepo
 }
 
-func Add(userDO *LoginUserDO) {
-	repo.Add(userDO)
+func getRepo() LoginUserRepo {
+	return repo
 }
 
-func FindUser(username string) (LoginUserDO, bool) {
-	return repo.FindOne(username)
+func add(userDO *LoginUserDO) {
+	getRepo().Add(userDO)
 }
 
-func GetUser(username string) LoginUserDO {
-	return repo.GetOne(username)
+func findUser(username string) (LoginUserDO, bool) {
+	return getRepo().FindOne(username)
 }
 
-func FindSmsCode(mobile string) string {
-	return repo.FindSmsCode(mobile)
-
-}
-func GetUniqueCode(username string) string {
-	return repo.GetOne(username).UniqueCode
+func getUser(username string) LoginUserDO {
+	return getRepo().GetOne(username)
 }
 
-func UpdatePassword(user LoginUserDO) LoginUserDO {
-	return repo.Update(user, map[string]interface{}{"password": user.Password})
+func findSmsCode(mobile string) string {
+	return getRepo().FindSmsCode(mobile)
+
+}
+func getUniqueCode(username string) string {
+	return getRepo().GetOne(username).UniqueCode
+}
+
+func updatePassword(user LoginUserDO) LoginUserDO {
+	return getRepo().Update(user, map[string]interface{}{"password": user.Password})
 }

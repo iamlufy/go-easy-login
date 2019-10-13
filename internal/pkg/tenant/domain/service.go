@@ -1,21 +1,19 @@
-package tenant_domain
+package domain
 
-import (
-	"math/rand"
-	"strconv"
-	"time"
-)
+type TenantService struct{}
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-
+func InitTenantService(tenantRepo TenantRepo) TenantService {
+	InitTenantRepo(tenantRepo)
+	return TenantService{}
 }
-func AddTenant(cmd *AddTenantCmd) (TenantCO, AddTenantSuccess) {
+
+type GenUniqueCode func() string
+
+func (service TenantService) AddTenant(cmd *AddTenantCmd, genUniqueCode GenUniqueCode) (TenantCO, AddTenantSuccess) {
 	if _, exist := find(cmd.TenantName); exist {
 		return TenantCO{}, TenantExist
 	}
 	tenantDO := ToTenantDO(cmd)
-	// TODO make more sense
-	tenantDO.UniqueCode = strconv.Itoa(rand.Intn(1000000))
+	tenantDO.UniqueCode = genUniqueCode()
 	return ToTenantCO(add(tenantDO)), AddSuccess
 }

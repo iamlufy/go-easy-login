@@ -1,10 +1,14 @@
 package token
 
 import (
-	token3 "oneday-infrastructure/internal/pkg/token"
+	"oneday-infrastructure/internal/pkg/token"
 )
 
-func CheckLogin(token string) (string, bool) {
-	return token3.VerifyAndRefresh(token)
-
+/**
+1.check token if valid,it will refresh token if token is out of expired time
+but user still active
+2.it will return unique code ,which is set by @{Generate}
+*/
+func CheckToken(tokenString string) (string, bool) {
+	return token.VerifyAndRefresh(tokenString)
 }
