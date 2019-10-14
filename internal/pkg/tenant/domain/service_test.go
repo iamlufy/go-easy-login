@@ -13,10 +13,6 @@ var tt *testing.T
 
 var mockRepo = &mocks.TenantRepo{}
 
-func init() {
-	InitTenantRepo(mockRepo)
-}
-
 func TestTenant(t *testing.T) {
 	tt = t
 
@@ -31,7 +27,7 @@ var _ = Describe("tenant service", func() {
 		service = InitTenantService(mockRepo)
 	})
 
-	Describe("Add tenant", func() {
+	Describe("Insert tenant", func() {
 		cmd := &AddTenantCmd{TenantName: "TenantName"}
 		newTenantCO := TenantCO{UniqueCode: "code", TenantName: "TenantName"}
 		newTenantDO := ToTenantDO(cmd)
@@ -41,12 +37,12 @@ var _ = Describe("tenant service", func() {
 
 		When("tenant does not exist", func() {
 			BeforeEach(func() {
-				mockRepo.On("Add", newTenantDO).Return(*newTenantDO).Once()
-				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{}).Once()
+				mockRepo.On("Insert", newTenantDO).Return(*newTenantDO).Once()
+				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{}, false).Once()
 			})
 
 			It("should return success", func() {
-				co, result := service.AddTenant(cmd, genUniqueCode)
+				co, result := service.Add(cmd, genUniqueCode)
 				Expect(result).To(Equal(AddSuccess))
 				Expect(co).To(Equal(newTenantCO))
 
@@ -59,11 +55,11 @@ var _ = Describe("tenant service", func() {
 				cmd = &AddTenantCmd{TenantName: "TenantName"}
 				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{
 					Model: gorm.Model{ID: 1},
-				}).Once()
+				}, true).Once()
 			})
 
 			It("should return existed", func() {
-				_, result := service.AddTenant(cmd, genUniqueCode)
+				_, result := service.Add(cmd, genUniqueCode)
 				Expect(result == TenantExist).To(BeTrue())
 			})
 		})

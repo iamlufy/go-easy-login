@@ -4,7 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"oneday-infrastructure/internal/pkg/authenticate/domain"
-	"strings"
 )
 
 type LoginUserRepo struct {
@@ -20,48 +19,25 @@ func InitLoginUserRepo(getDB func(string) *gorm.DB) LoginUserRepo {
 		PsqlTunnel{DB: getDB("authenticate")}}
 }
 
-func GetUsername(username string) string {
-	return getTenantCode() + username
-}
-
-func InitUsername(username string) string {
-	if strings.HasPrefix(username, getTenantCode()) {
-		return strings.Split(username, getTenantCode())[1]
-	}
-	return username
-}
-
-func getTenantCode() string {
-	//TODO inject tenant code
-	return "" + "_"
-}
-
-func (l PsqlTunnel) GetOne(username string) domain.LoginUserDO {
-	userDO, exist := l.FindOne(username)
-	if !exist {
+func (l PsqlTunnel) GetOne(username, tenantCode string) domain.LoginUserDO {
+	userDO, _ := l.FindOne(username, tenantCode)
+	if userDO.ID == 0 {
 		panic("can not find")
 	}
 	return userDO
 }
 
-func (l PsqlTunnel) FindOne(username string) (userDO domain.LoginUserDO, exist bool) {
-	l.Where("username=?", GetUsername(username)).First(&userDO)
-	if userDO.ID == 0 {
-		exist = false
-	} else {
-		exist = true
-	}
-	return userDO, exist
+func (l PsqlTunnel) FindOne(username string, tenantCode string) (userDO domain.LoginUserDO, exist bool) {
+	l.Where("username=? and tenant_code=?", username, tenantCode).First(&userDO)
+	return userDO, userDO.ID != 0
 }
 
 func (l PsqlTunnel) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
-	userDO.Username = GetUsername(userDO.Username)
 	result := l.Create(userDO)
 	if result.Error != nil {
 		panic(result.Error)
 	} else {
 		createUserDO := result.Value.(*domain.LoginUserDO)
-		createUserDO.Username = InitUsername(createUserDO.Username)
 		return *createUserDO
 	}
 }

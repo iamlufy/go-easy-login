@@ -1,19 +1,20 @@
 package domain
 
-type TenantService struct{}
+type TenantService struct {
+	TenantRepo
+}
 
 func InitTenantService(tenantRepo TenantRepo) TenantService {
-	InitTenantRepo(tenantRepo)
-	return TenantService{}
+	return TenantService{tenantRepo}
 }
 
 type GenUniqueCode func() string
 
-func (service TenantService) AddTenant(cmd *AddTenantCmd, genUniqueCode GenUniqueCode) (TenantCO, AddTenantSuccess) {
-	if _, exist := find(cmd.TenantName); exist {
+func (service TenantService) Add(cmd *AddTenantCmd, genUniqueCode GenUniqueCode) (TenantCO, AddTenantSuccess) {
+	if _, exist := service.FindByName(cmd.TenantName); exist {
 		return TenantCO{}, TenantExist
 	}
 	tenantDO := ToTenantDO(cmd)
 	tenantDO.UniqueCode = genUniqueCode()
-	return ToTenantCO(add(tenantDO)), AddSuccess
+	return ToTenantCO(service.Insert(tenantDO)), AddSuccess
 }

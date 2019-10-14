@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	tenant_domain "oneday-infrastructure/internal/pkg/tenant/domain"
+	domain "oneday-infrastructure/internal/pkg/tenant/domain"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -13,29 +13,36 @@ type TenantRepo struct {
 	mock.Mock
 }
 
-// Add provides a mock function with given fields: do
-func (_m *TenantRepo) Add(do *tenant_domain.TenantDO) tenant_domain.TenantDO {
-	ret := _m.Called(do)
-
-	var r0 tenant_domain.TenantDO
-	if rf, ok := ret.Get(0).(func(*tenant_domain.TenantDO) tenant_domain.TenantDO); ok {
-		r0 = rf(do)
-	} else {
-		r0 = ret.Get(0).(tenant_domain.TenantDO)
-	}
-
-	return r0
-}
-
 // FindByName provides a mock function with given fields: tenantName
-func (_m *TenantRepo) FindByName(tenantName string) tenant_domain.TenantDO {
+func (_m *TenantRepo) FindByName(tenantName string) (domain.TenantDO, bool) {
 	ret := _m.Called(tenantName)
 
-	var r0 tenant_domain.TenantDO
-	if rf, ok := ret.Get(0).(func(string) tenant_domain.TenantDO); ok {
+	var r0 domain.TenantDO
+	if rf, ok := ret.Get(0).(func(string) domain.TenantDO); ok {
 		r0 = rf(tenantName)
 	} else {
-		r0 = ret.Get(0).(tenant_domain.TenantDO)
+		r0 = ret.Get(0).(domain.TenantDO)
+	}
+
+	var r1 bool
+	if rf, ok := ret.Get(1).(func(string) bool); ok {
+		r1 = rf(tenantName)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+
+	return r0, r1
+}
+
+// Insert provides a mock function with given fields: do
+func (_m *TenantRepo) Insert(do *domain.TenantDO) domain.TenantDO {
+	ret := _m.Called(do)
+
+	var r0 domain.TenantDO
+	if rf, ok := ret.Get(0).(func(*domain.TenantDO) domain.TenantDO); ok {
+		r0 = rf(do)
+	} else {
+		r0 = ret.Get(0).(domain.TenantDO)
 	}
 
 	return r0

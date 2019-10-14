@@ -19,8 +19,8 @@ func init() {
 }
 
 func Login(cmd *domain.LoginCmd) (string, error) {
-
-	userStatus := service.GetUserStatus(cmd.Username)
+	//TODO check tenant
+	userStatus := service.GetUserStatus(cmd.Username, cmd.TenantCode)
 	if userStatus != domain.ALLOWED {
 		return "", errors.New(fmt.Sprintf("userStatus is %s", userStatus))
 	}
@@ -29,7 +29,7 @@ func Login(cmd *domain.LoginCmd) (string, error) {
 		return "", errors.New("match fail")
 	}
 	//TODO event
-	return facade.GenerateToken(service.GetUniqueCode(cmd.Username), cmd.EffectiveSeconds), nil
+	return facade.GenerateToken(cmd.UniqueCode, cmd.EffectiveSeconds), nil
 }
 
 func AddUser(cmd *domain.AddLoginUserCmd) domain.AddUserResult {

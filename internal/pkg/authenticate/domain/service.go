@@ -1,38 +1,39 @@
 package domain
 
-type LoginUserService struct{}
+type LoginUserService struct {
+	LoginUserRepo
+}
 
 func InitLoginUserService(userRepo LoginUserRepo) LoginUserService {
-	InitLoginUserRepo(userRepo)
-	return LoginUserService{}
+	return LoginUserService{userRepo}
 }
 
 func (service LoginUserService) Authenticate(cmd *LoginCmd) bool {
-	getCode := encryptCode(cmd.LoginMode)
-	return matcher(cmd.EncryptWay)(cmd.SourceCode, getCode(cmd.Username))
+	getCode := service.encryptCode(cmd.LoginMode)
+	return matcher(cmd.EncryptWay)(cmd.SourceCode, getCode(cmd.Username, cmd.TenantCode))
 }
 
 func matcher(encryptWay string) Matcher {
 	return ChooseMatcher(encryptWay)
 }
 
-func encryptCode(loginMode string) func(string) string {
+func (service LoginUserService) encryptCode(loginMode string) func(string, string) string {
 	switch loginMode {
 	case "PASSWORD":
-		return func(username string) string {
-			return getUser(username).Password
+		return func(username, tenantCode string) string {
+			return service.GetOne(username, tenantCode).Password
 		}
 	case "SMS":
-		return func(username string) string {
-			return findSmsCode(getUser(username).Mobile)
+		return func(username, tenantCode string) string {
+			return service.FindSmsCode(service.GetOne(username, tenantCode).Mobile)
 		}
 	default:
 		panic("unknown authenticate way")
 	}
 }
 
-func (service LoginUserService) GetUserStatus(username string) UserStatus {
-	userDO, existed := findUser(username)
+func (service LoginUserService) GetUserStatus(username, tenantCode string) UserStatus {
+	userDO, existed := service.FindOne(username, tenantCode)
 	if !existed {
 		return NotExist
 	}
@@ -43,17 +44,17 @@ func (service LoginUserService) GetUserStatus(username string) UserStatus {
 }
 
 func (service LoginUserService) AddUser(cmd *AddLoginUserCmd) AddUserResult {
-	if isUserExist(cmd.Username) {
+	if _, exist := service.FindOne(cmd.Username, cmd.TenantCode); exist {
 		return AddExistingUser
 	}
 	loginUserDO := ToLoginUserDO(cmd)
 	loginUserDO.Password = ChooseEncrypter(cmd.EncryptWay)(loginUserDO.Password)
-	add(loginUserDO)
+	service.Add(loginUserDO)
 	return AddUserSuccess
 }
 
 func (service LoginUserService) ReSetPassword(cmd *ResetPasswordCmd) ResetPasswordResult {
-	user, existed := findUser(cmd.Username)
+	user, existed := findUser(service.LoginUserRepo, cmd.Username, cmd.TenantCode)
 	if !existed {
 		return UserNotExisting
 	}
@@ -61,15 +62,6 @@ func (service LoginUserService) ReSetPassword(cmd *ResetPasswordCmd) ResetPasswo
 		return PasswordError
 	}
 	user.Password = ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)
-	updatePassword(user)
+	updatePassword(service.LoginUserRepo, user)
 	return ResetPasswordSuccess
-}
-
-func (service LoginUserService) GetUniqueCode(username string) string {
-	return getUniqueCode(username)
-}
-
-func isUserExist(username string) bool {
-	_, exist := findUser(username)
-	return exist
 }

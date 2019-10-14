@@ -11,27 +11,6 @@ type TenantDO struct {
 }
 
 type TenantRepo interface {
-	Add(do *TenantDO) TenantDO
-	FindByName(tenantName string) (t TenantDO)
-}
-
-var repo TenantRepo
-
-func InitTenantRepo(tenantRepo TenantRepo) TenantRepo {
-	repo = tenantRepo
-	return repo
-}
-
-func getRepo() TenantRepo {
-	// TODO inject more elegant
-	return repo
-}
-
-func add(tenant *TenantDO) TenantDO {
-	return getRepo().Add(tenant)
-}
-
-func find(tenantName string) (t TenantDO, exist bool) {
-	tenantDO := getRepo().FindByName(tenantName)
-	return tenantDO, tenantDO.ID != 0
+	Insert(do *TenantDO) TenantDO
+	FindByName(tenantName string) (tenant TenantDO, exist bool)
 }

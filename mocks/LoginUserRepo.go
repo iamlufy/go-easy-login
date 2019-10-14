@@ -27,20 +27,20 @@ func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) domain.LoginUserDO {
 	return r0
 }
 
-// FindOne provides a mock function with given fields: username
-func (_m *LoginUserRepo) FindOne(username string) (domain.LoginUserDO, bool) {
-	ret := _m.Called(username)
+// FindOne provides a mock function with given fields: username, tenantCode
+func (_m *LoginUserRepo) FindOne(username string, tenantCode string) (domain.LoginUserDO, bool) {
+	ret := _m.Called(username, tenantCode)
 
 	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string) domain.LoginUserDO); ok {
-		r0 = rf(username)
+	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
+		r0 = rf(username, tenantCode)
 	} else {
 		r0 = ret.Get(0).(domain.LoginUserDO)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func(string) bool); ok {
-		r1 = rf(username)
+	if rf, ok := ret.Get(1).(func(string, string) bool); ok {
+		r1 = rf(username, tenantCode)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -48,7 +48,7 @@ func (_m *LoginUserRepo) FindOne(username string) (domain.LoginUserDO, bool) {
 	return r0, r1
 }
 
-// findSmsCode provides a mock function with given fields: mobile
+// FindSmsCode provides a mock function with given fields: mobile
 func (_m *LoginUserRepo) FindSmsCode(mobile string) string {
 	ret := _m.Called(mobile)
 
@@ -62,13 +62,13 @@ func (_m *LoginUserRepo) FindSmsCode(mobile string) string {
 	return r0
 }
 
-// GetOne provides a mock function with given fields: username
-func (_m *LoginUserRepo) GetOne(username string) domain.LoginUserDO {
-	ret := _m.Called(username)
+// GetOne provides a mock function with given fields: username, tenantCode
+func (_m *LoginUserRepo) GetOne(username string, tenantCode string) domain.LoginUserDO {
+	ret := _m.Called(username, tenantCode)
 
 	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string) domain.LoginUserDO); ok {
-		r0 = rf(username)
+	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
+		r0 = rf(username, tenantCode)
 	} else {
 		r0 = ret.Get(0).(domain.LoginUserDO)
 	}

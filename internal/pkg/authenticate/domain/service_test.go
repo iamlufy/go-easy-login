@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "oneday-infrastructure/internal/pkg/authenticate/domain"
@@ -16,7 +17,6 @@ func TestLogin(t *testing.T) {
 	tt = t
 	mockRepo = &mocks.LoginUserRepo{}
 	mockRepo.Test(t)
-	InitLoginUserRepo(mockRepo)
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "authenticate Suite")
 }
@@ -35,19 +35,20 @@ var _ = Describe("service", func() {
 			SourceCode:       "123",
 			LoginMode:        "PASSWORD",
 			EncryptWay:       "MD5",
+			TenantCode:       "tenantCode",
 		}
 
 		var userDo = LoginUserDO{
-			Username:   cmd.Username,
-			Password:   ChooseEncrypter("MD5")(cmd.SourceCode),
-			IsLock:     false,
-			UniqueCode: "code",
-			Mobile:     "12345678901",
+			Username: cmd.Username,
+			Password: ChooseEncrypter("MD5")(cmd.SourceCode),
+			IsLock:   false,
+			Mobile:   "12345678901",
+			Model:    gorm.Model{ID: 1},
 		}
 		Describe("Authenticate", func() {
 			Context("login by password", func() {
 				BeforeEach(func() {
-					mockRepo.On("GetOne", cmd.Username).Return(userDo).Once()
+					mockRepo.On("GetOne", cmd.Username, cmd.TenantCode).Return(userDo).Once()
 				})
 
 				It("should return true ", func() {
@@ -60,7 +61,7 @@ var _ = Describe("service", func() {
 				BeforeEach(func() {
 					cmd.LoginMode = "SMS"
 					cmd.EncryptWay = ""
-					mockRepo.On("GetOne", cmd.Username).Return(userDo).Once()
+					mockRepo.On("GetOne", cmd.Username, cmd.TenantCode).Return(userDo).Once()
 					mockRepo.On("FindSmsCode", userDo.Mobile).Return(cmd.SourceCode).Once()
 				})
 
@@ -74,11 +75,11 @@ var _ = Describe("service", func() {
 		Describe("can login", func() {
 			Context("user does not exist", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindOne", cmd.Username).Return(LoginUserDO{}, false).Once()
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).Return(LoginUserDO{}, false).Once()
 				})
 
 				It("should return false", func() {
-					Expect(service.GetUserStatus(cmd.Username)).To(Equal(NotExist))
+					Expect(service.GetUserStatus(cmd.Username, cmd.TenantCode)).To(Equal(NotExist))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -86,11 +87,11 @@ var _ = Describe("service", func() {
 			Context("user is locked", func() {
 				BeforeEach(func() {
 					userDo.IsLock = true
-					mockRepo.On("FindOne", cmd.Username).Return(userDo, true).Once()
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).Return(userDo, true).Once()
 				})
 
 				It("should return false", func() {
-					Expect(service.GetUserStatus(cmd.Username)).To(Equal(LOCKED))
+					Expect(service.GetUserStatus(cmd.Username, cmd.TenantCode)).To(Equal(LOCKED))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -98,11 +99,11 @@ var _ = Describe("service", func() {
 			Context("user are allowed to login", func() {
 				BeforeEach(func() {
 					userDo.IsLock = false
-					mockRepo.On("FindOne", cmd.Username).Return(userDo, true).Once()
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).Return(userDo, true).Once()
 				})
 
 				It("should return true", func() {
-					Expect(service.GetUserStatus(cmd.Username)).To(Equal(ALLOWED))
+					Expect(service.GetUserStatus(cmd.Username, cmd.TenantCode)).To(Equal(ALLOWED))
 					mockRepo.AssertExpectations(tt)
 
 				})
@@ -114,11 +115,11 @@ var _ = Describe("service", func() {
 				Username:   "username",
 				Password:   "password",
 				EncryptWay: "MD5",
-				UniqueCode: "",
 			}
 			When(" user had existed", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindOne", cmd.Username).Return(LoginUserDO{}, true).Once()
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).
+						Return(LoginUserDO{Model: gorm.Model{ID: 1}}, true).Once()
 				})
 
 				It("should return AddExistingUser", func() {
@@ -129,7 +130,7 @@ var _ = Describe("service", func() {
 
 			When("user is not existing", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindOne", cmd.Username).Return(LoginUserDO{}, false).Once()
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).Return(LoginUserDO{}, false).Once()
 					userDo := ToLoginUserDO(cmd)
 					userDo.IsLock = false
 					userDo.Password = ChooseEncrypter(cmd.EncryptWay)(cmd.Password)
@@ -154,13 +155,20 @@ var _ = Describe("service", func() {
 			}
 			When("user is existing", func() {
 				When("oldPassword is correct", func() {
+					loginUserDO := LoginUserDO{
+						Password: ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword),
+						Model:    gorm.Model{ID: 1},
+					}
+
 					BeforeEach(func() {
-						mockRepo.On("FindOne", cmd.Username).
-							Return(LoginUserDO{Password: ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword)}, true).Once()
+						mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).
+							Return(loginUserDO, true).Once()
+
+						loginUserDO.Password = ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)
 
 						mockRepo.On(
 							"Update",
-							LoginUserDO{Password: ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)},
+							loginUserDO,
 							map[string]interface{}{"password": ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)}).
 							Return(LoginUserDO{}).Once()
 					})
@@ -173,8 +181,8 @@ var _ = Describe("service", func() {
 
 				When("oldPassword is error", func() {
 					BeforeEach(func() {
-						mockRepo.On("FindOne", cmd.Username).
-							Return(LoginUserDO{Password: ""}, true).Once()
+						mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).
+							Return(LoginUserDO{Password: "", Model: gorm.Model{ID: 1}}, true).Once()
 					})
 
 					It("should return success", func() {
@@ -186,7 +194,7 @@ var _ = Describe("service", func() {
 			})
 			When("user is nonexistent", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindOne", cmd.Username).
+					mockRepo.On("FindOne", cmd.Username, cmd.TenantCode).
 						Return(LoginUserDO{}, false).Once()
 				})
 				It("should return not exist", func() {

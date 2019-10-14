@@ -4,8 +4,8 @@ type AddLoginUserCmd struct {
 	Username   string
 	Password   string
 	EncryptWay string
-	UniqueCode string
-	mobile     string
+	Mobile     string
+	TenantCode string
 }
 type LoginCmd struct {
 	Username         string
@@ -14,6 +14,8 @@ type LoginCmd struct {
 	SourceCode       string
 	LoginMode        string
 	EncryptWay       string
+	UniqueCode       string
+	TenantCode       string
 }
 
 type ResetPasswordCmd struct {
@@ -21,15 +23,15 @@ type ResetPasswordCmd struct {
 	NewPassword string
 	OldPassword string
 	EncryptWay  string
+	TenantCode  string
 }
 
 func ToLoginUserDO(cmd *AddLoginUserCmd) *LoginUserDO {
 	return &LoginUserDO{
-		Username:   cmd.Username,
-		Password:   cmd.Password,
-		UniqueCode: cmd.UniqueCode,
-		IsLock:     false,
-		Mobile:     cmd.mobile,
+		Username: cmd.Username,
+		Password: cmd.Password,
+		IsLock:   false,
+		Mobile:   cmd.Mobile,
 	}
 }
 

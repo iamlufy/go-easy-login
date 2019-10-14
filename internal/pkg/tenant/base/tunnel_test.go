@@ -31,14 +31,14 @@ var _ = Describe("tunnel test", func() {
 		tenantRepo.DB.Rollback()
 	})
 
-	Context("Add", func() {
+	Context("Insert", func() {
 		tenant := &domain.TenantDO{
 			TenantName: strconv.Itoa(rand.Intn(10000000)),
 			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
 		}
 
 		It("should return with ID ", func() {
-			Expect(tenantRepo.Add(tenant).ID).NotTo(Equal(0))
+			Expect(tenantRepo.Insert(tenant).ID).NotTo(Equal(0))
 		})
 	})
 
@@ -49,11 +49,13 @@ var _ = Describe("tunnel test", func() {
 		}
 
 		BeforeEach(func() {
-			tenantRepo.Add(tenant)
+			tenantRepo.Insert(tenant)
 		})
 
 		It("should return tenant", func() {
-			Expect(tenantRepo.FindByName(tenant.TenantName).TenantName).To(Equal(tenant.TenantName))
+			do, exist := tenantRepo.FindByName(tenant.TenantName)
+			Expect(do.TenantName).To(Equal(tenant.TenantName))
+			Expect(exist).To(BeTrue())
 		})
 	})
 })

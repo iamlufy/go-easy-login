@@ -1,7 +1,6 @@
 package tenant
 
 import (
-	"github.com/jinzhu/gorm"
 	"math/rand"
 	"oneday-infrastructure/internal/pkg/tenant/base"
 	. "oneday-infrastructure/internal/pkg/tenant/domain"
@@ -15,14 +14,16 @@ func init() {
 	}
 }
 
-var tenantService = InitTenantService(
-	base.InitTenantRepo(func(name string) *gorm.DB {
-		return tools.OpenDB(name)
-	}))
+var repo = base.InitTenantRepo(tools.OpenDB)
+var tenantService = InitTenantService(repo)
 
 var genUniqueCode GenUniqueCode = func() string { return strconv.Itoa(rand.Intn(1000000)) }
 
-func AddTenant(cmd *AddTenantCmd) (TenantCO, AddTenantSuccess) {
-	return tenantService.AddTenant(cmd, genUniqueCode)
+func Add(cmd *AddTenantCmd) (TenantCO, AddTenantSuccess) {
+	return tenantService.Add(cmd, genUniqueCode)
 
+}
+func IsExist(code string) bool {
+	_, exist := repo.FindByCode(code)
+	return exist
 }

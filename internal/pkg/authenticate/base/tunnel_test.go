@@ -38,7 +38,7 @@ var _ = Describe("repoTest", func() {
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: strconv.Itoa(rand.Intn(10000000)),
 			Mobile:     "23456789011",
 		}
 		It("should return with ID", func() {
@@ -46,14 +46,14 @@ var _ = Describe("repoTest", func() {
 		})
 	})
 
-	Describe("GenOne", func() {
+	Describe("GetOne", func() {
 		var addUserDO domain.LoginUserDO
 		userDO := &domain.LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: strconv.Itoa(rand.Intn(10000000)),
 			Mobile:     "23456789011",
 		}
 		Context("when user exits", func() {
@@ -62,16 +62,15 @@ var _ = Describe("repoTest", func() {
 			})
 
 			It("should get user by username", func() {
-				dbUser := repo.GetOne(addUserDO.Username)
+				dbUser := repo.GetOne(addUserDO.Username, addUserDO.TenantCode)
 				Expect(dbUser).NotTo(BeNil())
-				Expect(dbUser.UniqueCode).NotTo(BeNil())
 			})
 		})
 
 		Context("when user does not exist", func() {
 			It("should panic", func() {
 				Expect(func() {
-					repo.GetOne(strconv.Itoa(rand.Intn(100000)))
+					repo.GetOne(strconv.Itoa(rand.Intn(100000)), "12312")
 				}).To(Panic())
 			})
 
@@ -86,7 +85,7 @@ var _ = Describe("repoTest", func() {
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			UniqueCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: strconv.Itoa(rand.Intn(10000000)),
 			Mobile:     "23456789011",
 		}
 
@@ -96,7 +95,7 @@ var _ = Describe("repoTest", func() {
 
 		It("should return new user", func() {
 			repo.Update(addUserDO, map[string]interface{}{"password": "123"})
-			Expect(repo.GetOne(addUserDO.Username).Password).To(Equal("123"))
+			Expect(repo.GetOne(addUserDO.Username, addUserDO.TenantCode).Password).To(Equal("123"))
 		})
 	})
 
