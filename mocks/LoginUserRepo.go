@@ -13,34 +13,20 @@ type LoginUserRepo struct {
 	mock.Mock
 }
 
-// Add provides a mock function with given fields: _a0
-func (_m *LoginUserRepo) Add(_a0 *domain.LoginUserDO) domain.LoginUserDO {
-	ret := _m.Called(_a0)
+// FindOne provides a mock function with given fields: username
+func (_m *LoginUserRepo) FindOne(username string) (domain.LoginUser, bool) {
+	ret := _m.Called(username)
 
-	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(*domain.LoginUserDO) domain.LoginUserDO); ok {
-		r0 = rf(_a0)
+	var r0 domain.LoginUser
+	if rf, ok := ret.Get(0).(func(string) domain.LoginUser); ok {
+		r0 = rf(username)
 	} else {
-		r0 = ret.Get(0).(domain.LoginUserDO)
-	}
-
-	return r0
-}
-
-// FindOne provides a mock function with given fields: username, tenantCode
-func (_m *LoginUserRepo) FindOne(username string, tenantCode string) (domain.LoginUserDO, bool) {
-	ret := _m.Called(username, tenantCode)
-
-	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
-		r0 = rf(username, tenantCode)
-	} else {
-		r0 = ret.Get(0).(domain.LoginUserDO)
+		r0 = ret.Get(0).(domain.LoginUser)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func(string, string) bool); ok {
-		r1 = rf(username, tenantCode)
+	if rf, ok := ret.Get(1).(func(string) bool); ok {
+		r1 = rf(username)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -62,29 +48,29 @@ func (_m *LoginUserRepo) FindSmsCode(mobile string) string {
 	return r0
 }
 
-// GetOne provides a mock function with given fields: username, tenantCode
-func (_m *LoginUserRepo) GetOne(username string, tenantCode string) domain.LoginUserDO {
-	ret := _m.Called(username, tenantCode)
+// GetOne provides a mock function with given fields: username
+func (_m *LoginUserRepo) GetOne(username string) domain.LoginUser {
+	ret := _m.Called(username)
 
-	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(string, string) domain.LoginUserDO); ok {
-		r0 = rf(username, tenantCode)
+	var r0 domain.LoginUser
+	if rf, ok := ret.Get(0).(func(string) domain.LoginUser); ok {
+		r0 = rf(username)
 	} else {
-		r0 = ret.Get(0).(domain.LoginUserDO)
+		r0 = ret.Get(0).(domain.LoginUser)
 	}
 
 	return r0
 }
 
-// Update provides a mock function with given fields: model, updateFields
-func (_m *LoginUserRepo) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
-	ret := _m.Called(model, updateFields)
+// UpdateByUsername provides a mock function with given fields: user
+func (_m *LoginUserRepo) UpdateByUsername(user domain.LoginUser) domain.LoginUser {
+	ret := _m.Called(user)
 
-	var r0 domain.LoginUserDO
-	if rf, ok := ret.Get(0).(func(domain.LoginUserDO, map[string]interface{}) domain.LoginUserDO); ok {
-		r0 = rf(model, updateFields)
+	var r0 domain.LoginUser
+	if rf, ok := ret.Get(0).(func(domain.LoginUser) domain.LoginUser); ok {
+		r0 = rf(user)
 	} else {
-		r0 = ret.Get(0).(domain.LoginUserDO)
+		r0 = ret.Get(0).(domain.LoginUser)
 	}
 
 	return r0

@@ -6,7 +6,18 @@ import (
 	"oneday-infrastructure/internal/pkg/authenticate/domain"
 )
 
+type LoginUserDO struct {
+	gorm.Model
+	//TODO unique_index
+	Username   string `gorm:"type:varchar(100);unique_index;not null"`
+	Password   string `gorm:"type:varchar(100);unique_index;not null;default:''"`
+	IsLock     bool   `gorm:"type:boolean;not null;default:false"`
+	TenantCode string `gorm:"type:varchar(100);unique_index;not null"`
+	Mobile     string `gorm:"type:varchar(100)"`
+}
+
 type LoginUserRepo struct {
+	TenantCode string
 	PsqlTunnel
 }
 
@@ -14,38 +25,68 @@ type PsqlTunnel struct {
 	*gorm.DB
 }
 
-func InitLoginUserRepo(getDB func(string) *gorm.DB) LoginUserRepo {
+var db *gorm.DB
+
+func NewLoginUserRepo(getDB func(string) *gorm.DB, tenantCode string) LoginUserRepo {
+	if db == nil {
+		//TODO 控制并发
+		db = getDB("authenticate")
+	}
 	return LoginUserRepo{
-		PsqlTunnel{DB: getDB("authenticate")}}
+		tenantCode,
+		PsqlTunnel{DB: db}}
 }
 
-func (l PsqlTunnel) GetOne(username, tenantCode string) domain.LoginUserDO {
-	userDO, _ := l.FindOne(username, tenantCode)
-	if userDO.ID == 0 {
+func (psql PsqlTunnel) tenantQuery(tenantCode string) *gorm.DB {
+	return psql.Where("tenant_code = ?", tenantCode)
+}
+
+func (l PsqlTunnel) GetOne(username, tenantCode string) LoginUserDO {
+	userDO, exist := l.FindOne(username, tenantCode)
+	if !exist {
 		panic("can not find")
 	}
 	return userDO
 }
 
-func (l PsqlTunnel) FindOne(username string, tenantCode string) (userDO domain.LoginUserDO, exist bool) {
-	l.Where("username=? and tenant_code=?", username, tenantCode).First(&userDO)
+func (psql PsqlTunnel) FindOne(username string, tenantCode string) (userDO LoginUserDO, exist bool) {
+	psql.tenantQuery(tenantCode).Where("username =?", username).First(&userDO)
 	return userDO, userDO.ID != 0
 }
 
-func (l PsqlTunnel) Add(userDO *domain.LoginUserDO) domain.LoginUserDO {
+func (l PsqlTunnel) Add(userDO *LoginUserDO) LoginUserDO {
 	result := l.Create(userDO)
 	if result.Error != nil {
 		panic(result.Error)
 	} else {
-		createUserDO := result.Value.(*domain.LoginUserDO)
+		createUserDO := result.Value.(*LoginUserDO)
 		return *createUserDO
 	}
 }
 
-func (l PsqlTunnel) Update(model domain.LoginUserDO, updateFields map[string]interface{}) domain.LoginUserDO {
-	return *l.Model(&model).Updates(updateFields).Value.(*domain.LoginUserDO)
+func (psql PsqlTunnel) Update(model LoginUserDO, updateFields map[string]interface{}) LoginUserDO {
+	return *psql.Model(&model).Updates(updateFields).Value.(*LoginUserDO)
 }
 
-func (l PsqlTunnel) FindSmsCode(mobile string) string {
+func (psql PsqlTunnel) UpdateByUsername(username string, tenantCode string, updateFields map[string]interface{}) LoginUserDO {
+	userDO := psql.GetOne(username, tenantCode)
+	return *psql.tenantQuery(tenantCode).Model(&userDO).Updates(updateFields).Value.(*LoginUserDO)
+}
+
+func (repo LoginUserRepo) FindSmsCode(mobile string) string {
 	panic("implement me")
+}
+func (repo LoginUserRepo) GetOne(username string) domain.LoginUser {
+	return ToLoginUser(repo.PsqlTunnel.GetOne(username, repo.TenantCode))
+}
+
+func (repo LoginUserRepo) UpdateByUsername(user domain.LoginUser) domain.LoginUser {
+	return ToLoginUser(repo.PsqlTunnel.UpdateByUsername(user.Username, repo.TenantCode, map[string]interface{}{
+		"password": user.Password,
+	}))
+}
+
+func (repo LoginUserRepo) FindOne(username string) (domain.LoginUser, bool) {
+	userDO, exist := repo.PsqlTunnel.FindOne(username, repo.TenantCode)
+	return ToLoginUser(userDO), exist
 }

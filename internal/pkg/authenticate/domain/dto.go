@@ -5,17 +5,15 @@ type AddLoginUserCmd struct {
 	Password   string
 	EncryptWay string
 	Mobile     string
-	TenantCode string
 }
+
 type LoginCmd struct {
 	Username         string
 	EffectiveSeconds int
-	Mobile           string
 	SourceCode       string
 	LoginMode        string
 	EncryptWay       string
 	UniqueCode       string
-	TenantCode       string
 }
 
 type ResetPasswordCmd struct {
@@ -23,16 +21,6 @@ type ResetPasswordCmd struct {
 	NewPassword string
 	OldPassword string
 	EncryptWay  string
-	TenantCode  string
-}
-
-func ToLoginUserDO(cmd *AddLoginUserCmd) *LoginUserDO {
-	return &LoginUserDO{
-		Username: cmd.Username,
-		Password: cmd.Password,
-		IsLock:   false,
-		Mobile:   cmd.Mobile,
-	}
 }
 
 const Success = "SUCCESS"
@@ -41,9 +29,9 @@ const NotExisting = "NOT_EXISTING"
 
 type UserStatus string
 
-const NotExist UserStatus = "Not_Exist"
-const ALLOWED UserStatus = "ALLOWED"
-const LOCKED UserStatus = "LOCKED"
+const NotExist = "Not_Exist"
+const ALLOWED = "ALLOWED"
+const LOCKED = "LOCKED"
 
 type AddUserResult string
 
@@ -52,6 +40,11 @@ const AddExistingUser AddUserResult = Existing
 
 type ResetPasswordResult string
 
-const ResetPasswordSuccess ResetPasswordResult = Success
-const UserNotExisting ResetPasswordResult = NotExisting
-const PasswordError ResetPasswordResult = "PASSWORD_ERROR"
+const ResetPasswordSuccess = Success
+const UserNotExisting = NotExisting
+const PasswordError = "PASSWORD_ERROR"
+
+type AuthenticateResult string
+
+const NotAvailable = "NotAvailable"
+const AuthenticateFailed = "AuthenticateFailed"

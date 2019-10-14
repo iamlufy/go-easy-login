@@ -5,8 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"math/rand"
-	"oneday-infrastructure/internal/pkg/authenticate/base"
-	"oneday-infrastructure/internal/pkg/authenticate/domain"
+	. "oneday-infrastructure/internal/pkg/authenticate/base"
 	"oneday-infrastructure/tools"
 	"strconv"
 	"testing"
@@ -18,14 +17,15 @@ var tt *testing.T
 func TestRepo(t *testing.T) {
 	tt = t
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "repo Suite")
+	RunSpecs(t, "tunnel Suite")
 }
 
-var _ = Describe("repoTest", func() {
+var _ = Describe("tunnelTest", func() {
+	tenantCode := "tenantCode"
 	rand.Seed(time.Now().UnixNano())
-	var repo base.LoginUserRepo
+	var repo LoginUserRepo
 	BeforeEach(func() {
-		repo = base.InitLoginUserRepo(tools.OpenDB)
+		repo = NewLoginUserRepo(tools.OpenDB, tenantCode)
 		repo.DB = repo.DB.Begin()
 	})
 	AfterEach(func() {
@@ -33,36 +33,36 @@ var _ = Describe("repoTest", func() {
 	})
 
 	Context("Add", func() {
-		userDO := &domain.LoginUserDO{
+		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			TenantCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: tenantCode,
 			Mobile:     "23456789011",
 		}
 		It("should return with ID", func() {
-			Expect(repo.Add(userDO).ID).NotTo(BeNil())
+			Expect(repo.PsqlTunnel.Add(userDO).ID).NotTo(BeNil())
 		})
 	})
 
 	Describe("GetOne", func() {
-		var addUserDO domain.LoginUserDO
-		userDO := &domain.LoginUserDO{
+		var addUserDO LoginUserDO
+		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			TenantCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: tenantCode,
 			Mobile:     "23456789011",
 		}
 		Context("when user exits", func() {
 			BeforeEach(func() {
-				addUserDO = repo.Add(userDO)
+				addUserDO = repo.PsqlTunnel.Add(userDO)
 			})
 
 			It("should get user by username", func() {
-				dbUser := repo.GetOne(addUserDO.Username, addUserDO.TenantCode)
+				dbUser := repo.GetOne(addUserDO.Username)
 				Expect(dbUser).NotTo(BeNil())
 			})
 		})
@@ -70,7 +70,7 @@ var _ = Describe("repoTest", func() {
 		Context("when user does not exist", func() {
 			It("should panic", func() {
 				Expect(func() {
-					repo.GetOne(strconv.Itoa(rand.Intn(100000)), "12312")
+					repo.GetOne(strconv.Itoa(rand.Intn(100000)))
 				}).To(Panic())
 			})
 
@@ -79,23 +79,23 @@ var _ = Describe("repoTest", func() {
 
 	Describe("update", func() {
 
-		var addUserDO domain.LoginUserDO
-		userDO := &domain.LoginUserDO{
+		var addUserDO LoginUserDO
+		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
 			Password:   strconv.Itoa(rand.Intn(10000000)),
 			IsLock:     false,
-			TenantCode: strconv.Itoa(rand.Intn(10000000)),
+			TenantCode: tenantCode,
 			Mobile:     "23456789011",
 		}
 
 		BeforeEach(func() {
-			addUserDO = repo.Add(userDO)
+			addUserDO = repo.PsqlTunnel.Add(userDO)
 		})
 
 		It("should return new user", func() {
-			repo.Update(addUserDO, map[string]interface{}{"password": "123"})
-			Expect(repo.GetOne(addUserDO.Username, addUserDO.TenantCode).Password).To(Equal("123"))
+			repo.PsqlTunnel.Update(addUserDO, map[string]interface{}{"password": "123"})
+			Expect(repo.PsqlTunnel.GetOne(addUserDO.Username, addUserDO.TenantCode).Password).To(Equal("123"))
 		})
 	})
 

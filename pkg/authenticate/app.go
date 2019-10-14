@@ -2,40 +2,39 @@ package authenticate
 
 import (
 	"errors"
-	"fmt"
 	"oneday-infrastructure/internal/pkg/authenticate/base"
 	"oneday-infrastructure/internal/pkg/authenticate/domain"
-	"oneday-infrastructure/internal/pkg/authenticate/facade"
 	"oneday-infrastructure/tools"
 )
 
-var service = domain.InitLoginUserService(base.InitLoginUserRepo(tools.OpenDB))
+var service = func(tenantCode string) domain.LoginUserService {
+	return domain.NewLoginUserService(base.NewLoginUserRepo(tools.OpenDB, tenantCode))
+}
 
 func init() {
 	if &service == nil {
 		panic("LoginUserService should init ")
 	}
-
 }
 
-func Login(cmd *domain.LoginCmd) (string, error) {
+func Login(cmd *domain.LoginCmd, tenantCode string) (string, error) {
 	//TODO check tenant
-	userStatus := service.GetUserStatus(cmd.Username, cmd.TenantCode)
-	if userStatus != domain.ALLOWED {
-		return "", errors.New(fmt.Sprintf("userStatus is %s", userStatus))
-	}
-	matcherResult := service.Authenticate(cmd)
-	if !matcherResult {
-		return "", errors.New("match fail")
+
+	token, matcherResult := service(tenantCode).Authenticate(cmd)
+	if string(matcherResult) != domain.Success {
+		return "", errors.New(string(matcherResult))
 	}
 	//TODO event
-	return facade.GenerateToken(cmd.UniqueCode, cmd.EffectiveSeconds), nil
+	return token, nil
 }
 
-func AddUser(cmd *domain.AddLoginUserCmd) domain.AddUserResult {
-	return service.AddUser(cmd)
+func AddUser(cmd *domain.AddLoginUserCmd, tenantCode string) {
+	repo := base.NewLoginUserRepo(tools.OpenDB, tenantCode)
+	user := base.ToLoginUserDO(cmd)
+	user.Password = service(tenantCode).Encrypt(cmd.EncryptWay, cmd.Password)
+	repo.Add(&user)
 }
 
-func ReSetPassword(cmd *domain.ResetPasswordCmd) domain.ResetPasswordResult {
-	return service.ReSetPassword(cmd)
+func ReSetPassword(cmd *domain.ResetPasswordCmd, tenantCode string) domain.ResetPasswordResult {
+	return service(tenantCode).ReSetPassword(cmd)
 }
