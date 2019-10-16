@@ -32,7 +32,7 @@ var _ = Describe("tunnelTest", func() {
 		repo.DB.Rollback()
 	})
 
-	Context("Add", func() {
+	Context("Insert", func() {
 		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
@@ -42,12 +42,12 @@ var _ = Describe("tunnelTest", func() {
 			Mobile:     "23456789011",
 		}
 		It("should return with ID", func() {
-			Expect(repo.PsqlTunnel.Add(userDO).ID).NotTo(BeNil())
+			repo.PsqlTunnel.Insert(userDO)
+			Expect(userDO.ID).NotTo(BeNil())
 		})
 	})
 
 	Describe("GetOne", func() {
-		var addUserDO LoginUserDO
 		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
@@ -58,11 +58,11 @@ var _ = Describe("tunnelTest", func() {
 		}
 		Context("when user exits", func() {
 			BeforeEach(func() {
-				addUserDO = repo.PsqlTunnel.Add(userDO)
+				repo.PsqlTunnel.Insert(userDO)
 			})
 
 			It("should get user by username", func() {
-				dbUser := repo.GetOne(addUserDO.Username)
+				dbUser := repo.GetOne(userDO.Username)
 				Expect(dbUser).NotTo(BeNil())
 			})
 		})
@@ -77,9 +77,8 @@ var _ = Describe("tunnelTest", func() {
 		})
 	})
 
-	Describe("update", func() {
+	Describe("UpdateFields", func() {
 
-		var addUserDO LoginUserDO
 		userDO := &LoginUserDO{
 			Model:      gorm.Model{},
 			Username:   strconv.Itoa(rand.Intn(10000000)),
@@ -90,12 +89,45 @@ var _ = Describe("tunnelTest", func() {
 		}
 
 		BeforeEach(func() {
-			addUserDO = repo.PsqlTunnel.Add(userDO)
+			repo.PsqlTunnel.Insert(userDO)
 		})
 
 		It("should return new user", func() {
-			repo.PsqlTunnel.Update(addUserDO, map[string]interface{}{"password": "123"})
-			Expect(repo.PsqlTunnel.GetOne(addUserDO.Username, addUserDO.TenantCode).Password).To(Equal("123"))
+			repo.PsqlTunnel.Update(userDO, map[string]interface{}{
+				"password": "123",
+			})
+			Expect(userDO.Password).To(Equal("123"))
+		})
+	})
+
+	Describe("Update And FindOne", func() {
+
+		userDO := &LoginUserDO{
+			Model:      gorm.Model{},
+			Username:   strconv.Itoa(rand.Intn(10000000)),
+			Password:   strconv.Itoa(rand.Intn(10000000)),
+			IsLock:     false,
+			TenantCode: tenantCode,
+			Mobile:     "23456789011",
+		}
+
+		BeforeEach(func() {
+			repo.PsqlTunnel.Insert(userDO)
+		})
+
+		It("should return new user", func() {
+			repo.PsqlTunnel.UpdateFields(userDO.Username, tenantCode, map[string]interface{}{
+				"password": "123",
+			})
+			Expect(
+				(repo.PsqlTunnel.UpdateFields(
+					userDO.Username,
+					tenantCode,
+					map[string]interface{}{"password": "123"})).Password).
+				To(Equal("123"))
+			loginUserDO, exist := repo.PsqlTunnel.FindOne(userDO.Username, tenantCode)
+			Expect(exist).Should(BeTrue())
+			Expect(loginUserDO.Password).Should(Equal("123"))
 		})
 	})
 

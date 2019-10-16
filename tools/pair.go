@@ -19,3 +19,9 @@ func (pair *Pair) CompareKey(pair2 *Pair) bool {
 func (pair *Pair) Value() interface{} {
 	return pair.value
 }
+
+func NewMap(key string, value interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		key: value,
+	}
+}

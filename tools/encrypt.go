@@ -1,4 +1,4 @@
-package domain
+package tools
 
 import (
 	"crypto/md5"

@@ -3,26 +3,29 @@ package domain
 type AddTenantCmd struct {
 	TenantName string
 }
+
+type AddUserCmd struct {
+	TenantCode string
+	Username   string
+	Mobile     string
+	Password   string
+	EncryptWay string
+}
+
 type TenantCO struct {
 	TenantName string
-	UniqueCode string
+	TenantCode string
 }
 
-func ToTenantDO(cmd *AddTenantCmd) *TenantDO {
-	return &TenantDO{
-		TenantName: cmd.TenantName,
-	}
-}
-
-func ToTenantCO(do TenantDO) TenantCO {
+func ToTenantCO(t Tenant) TenantCO {
 	return TenantCO{
-		TenantName: do.TenantName,
-		UniqueCode: do.UniqueCode,
+		TenantName: t.TenantName,
+		TenantCode: t.TenantCode,
 	}
 }
 
 type AddTenantSuccess string
 
-const AddSuccess AddTenantSuccess = "SUCCESS"
+const AddSuccess AddTenantSuccess = "Success"
 
-const TenantExist AddTenantSuccess = "EXISTED"
+const TenantNameExist AddTenantSuccess = "TenantName_Existed"

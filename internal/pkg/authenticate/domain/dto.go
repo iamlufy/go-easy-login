@@ -10,7 +10,7 @@ type AddLoginUserCmd struct {
 type LoginCmd struct {
 	Username         string
 	EffectiveSeconds int
-	SourceCode       string
+	PassCode         string
 	LoginMode        string
 	EncryptWay       string
 	UniqueCode       string
@@ -40,11 +40,14 @@ const AddExistingUser AddUserResult = Existing
 
 type ResetPasswordResult string
 
+func (r ResetPasswordResult) IsSuccess() bool { return r == Success }
+
 const ResetPasswordSuccess = Success
-const UserNotExisting = NotExisting
 const PasswordError = "PASSWORD_ERROR"
 
 type AuthenticateResult string
+
+func (r AuthenticateResult) IsSuccess() bool { return r == Success }
 
 const NotAvailable = "NotAvailable"
 const AuthenticateFailed = "AuthenticateFailed"

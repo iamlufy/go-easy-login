@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "oneday-infrastructure/internal/pkg/authenticate/domain"
 	"oneday-infrastructure/mocks"
+	"oneday-infrastructure/tools"
 	"testing"
 )
 
@@ -30,21 +31,20 @@ var _ = Describe("service", func() {
 		var cmd = &LoginCmd{
 			Username:         "username",
 			EffectiveSeconds: 10,
-			SourceCode:       "123",
+			PassCode:         "123",
 			LoginMode:        "PASSWORD",
 			EncryptWay:       "MD5",
-			//TenantCode:       "tenantCode",
 		}
 
 		user := LoginUser{
-			Username: cmd.Username,
-			Password: ChooseEncrypter("MD5")(cmd.SourceCode),
-			IsLock:   false,
-			Mobile:   "12345678901",
+			IsLock: false,
 		}
 		Describe("Authenticate", func() {
-			Context("login by password", func() {
+			Context("login by Password", func() {
 				BeforeEach(func() {
+					user.PassCode = PassCode{
+						LoginMode: LoginMode(cmd.LoginMode),
+						Password:  Password(tools.ChooseEncrypter(cmd.EncryptWay)(cmd.PassCode))}
 					mockRepo.On("FindOne", cmd.Username).Return(user, true).Once()
 				})
 
@@ -58,10 +58,13 @@ var _ = Describe("service", func() {
 
 			Context("login by sms code", func() {
 				BeforeEach(func() {
-					cmd.LoginMode = "SMS"
+					cmd.LoginMode = "SMS_CODE"
 					cmd.EncryptWay = ""
+					user.PassCode = PassCode{
+						LoginMode: LoginMode(cmd.LoginMode),
+						SmsCode:   SmsCode(cmd.PassCode),
+					}
 					mockRepo.On("FindOne", cmd.Username).Return(user, true).Once()
-					mockRepo.On("FindSmsCode", user.Mobile).Return(cmd.SourceCode).Once()
 				})
 
 				It("should return true ", func() {
@@ -73,7 +76,7 @@ var _ = Describe("service", func() {
 			})
 		})
 
-		Describe("can login", func() {
+		Describe("GetUserStatus", func() {
 			Context("user does not exist", func() {
 				BeforeEach(func() {
 					mockRepo.On("FindOne", cmd.Username).Return(LoginUser{}, false).Once()
@@ -92,7 +95,7 @@ var _ = Describe("service", func() {
 				})
 
 				It("should return false", func() {
-					Expect(string(service.GetUserStatus(cmd.Username))).To(Equal(LOCKED))
+					Expect(string(service.GetUserStatus(cmd.Username))).To(Equal(NotAvailable))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
@@ -111,60 +114,49 @@ var _ = Describe("service", func() {
 			})
 		})
 
-		Describe("reset user password", func() {
+		Describe("reset user Password", func() {
 			cmd := &ResetPasswordCmd{
 				Username:    "username",
 				NewPassword: "newPassword",
 				OldPassword: "oldPassword",
 				EncryptWay:  "MD5",
 			}
-			When("user is existing", func() {
-				When("oldPassword is correct", func() {
-					loginUserDO := LoginUser{
-						Password: ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword),
-						Username: cmd.Username,
-					}
+			When("oldPassword is correct", func() {
 
-					BeforeEach(func() {
-						mockRepo.On("FindOne", cmd.Username).
-							Return(loginUserDO, true).Once()
-
-						loginUserDO.Password = ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)
-
-						mockRepo.On(
-							"UpdateByUsername",
-							loginUserDO).Return(LoginUser{}).Once()
-					})
-
-					It("should return success", func() {
-						Expect(string(service.ReSetPassword(cmd))).To(Equal(ResetPasswordSuccess))
-						mockRepo.AssertExpectations(tt)
-					})
-				})
-
-				When("oldPassword is error", func() {
-					BeforeEach(func() {
-						mockRepo.On("FindOne", cmd.Username).
-							Return(LoginUser{Password: ""}, true).Once()
-					})
-
-					It("should return success", func() {
-						Expect(string(service.ReSetPassword(cmd))).To(Equal(PasswordError))
-						mockRepo.AssertExpectations(tt)
-					})
-				})
-
-			})
-			When("user is nonexistent", func() {
 				BeforeEach(func() {
-					mockRepo.On("FindOne", cmd.Username).
-						Return(LoginUser{Password: ""}, false).Once()
+					loginUser := LoginUser{
+						PassCode: NewPassCode(tools.ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword)),
+					}
+					mockRepo.On("GetOne", cmd.Username).
+						Return(loginUser).Once()
+
+					loginUser = LoginUser{
+						PassCode: NewPassCode(tools.ChooseEncrypter(cmd.EncryptWay)(cmd.NewPassword)),
+					}
+					mockRepo.On(
+						"UpdatePasswordByUsername",
+						loginUser).Return(LoginUser{}).Once()
 				})
-				It("should return not exist", func() {
-					service.ReSetPassword(cmd)
+
+				It("should return success", func() {
+					Expect(string(service.ReSetPassword(cmd))).To(Equal(ResetPasswordSuccess))
 					mockRepo.AssertExpectations(tt)
 				})
 			})
+
+			When("oldPassword is error", func() {
+				BeforeEach(func() {
+					mockRepo.On("GetOne", cmd.Username).
+						Return(LoginUser{PassCode: PassCode{
+							Password: Password(tools.ChooseEncrypter(cmd.EncryptWay)(""))}}).Once()
+				})
+
+				It("should return success", func() {
+					Expect(string(service.ReSetPassword(cmd))).To(Equal(PasswordError))
+					mockRepo.AssertExpectations(tt)
+				})
+			})
+
 		})
 	})
 

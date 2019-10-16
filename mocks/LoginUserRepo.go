@@ -62,8 +62,8 @@ func (_m *LoginUserRepo) GetOne(username string) domain.LoginUser {
 	return r0
 }
 
-// UpdateByUsername provides a mock function with given fields: user
-func (_m *LoginUserRepo) UpdateByUsername(user domain.LoginUser) domain.LoginUser {
+// UpdatePasswordByUsername provides a mock function with given fields: user
+func (_m *LoginUserRepo) UpdatePasswordByUsername(user domain.LoginUser) domain.LoginUser {
 	ret := _m.Called(user)
 
 	var r0 domain.LoginUser

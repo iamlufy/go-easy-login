@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"oneday-infrastructure/internal/pkg/authenticate/domain"
+	"oneday-infrastructure/tools"
 )
 
 type LoginUserDO struct {
@@ -41,8 +42,8 @@ func (psql PsqlTunnel) tenantQuery(tenantCode string) *gorm.DB {
 	return psql.Where("tenant_code = ?", tenantCode)
 }
 
-func (l PsqlTunnel) GetOne(username, tenantCode string) LoginUserDO {
-	userDO, exist := l.FindOne(username, tenantCode)
+func (psql PsqlTunnel) GetOne(username, tenantCode string) LoginUserDO {
+	userDO, exist := psql.FindOne(username, tenantCode)
 	if !exist {
 		panic("can not find")
 	}
@@ -54,21 +55,18 @@ func (psql PsqlTunnel) FindOne(username string, tenantCode string) (userDO Login
 	return userDO, userDO.ID != 0
 }
 
-func (l PsqlTunnel) Add(userDO *LoginUserDO) LoginUserDO {
-	result := l.Create(userDO)
+func (psql PsqlTunnel) Insert(userDO *LoginUserDO) {
+	result := psql.Create(&userDO)
 	if result.Error != nil {
 		panic(result.Error)
-	} else {
-		createUserDO := result.Value.(*LoginUserDO)
-		return *createUserDO
 	}
 }
 
-func (psql PsqlTunnel) Update(model LoginUserDO, updateFields map[string]interface{}) LoginUserDO {
-	return *psql.Model(&model).Updates(updateFields).Value.(*LoginUserDO)
+func (psql PsqlTunnel) Update(model *LoginUserDO, updateFields map[string]interface{}) {
+	psql.Model(&model).Updates(updateFields)
 }
 
-func (psql PsqlTunnel) UpdateByUsername(username string, tenantCode string, updateFields map[string]interface{}) LoginUserDO {
+func (psql PsqlTunnel) UpdateFields(username string, tenantCode string, updateFields map[string]interface{}) LoginUserDO {
 	userDO := psql.GetOne(username, tenantCode)
 	return *psql.tenantQuery(tenantCode).Model(&userDO).Updates(updateFields).Value.(*LoginUserDO)
 }
@@ -80,10 +78,12 @@ func (repo LoginUserRepo) GetOne(username string) domain.LoginUser {
 	return ToLoginUser(repo.PsqlTunnel.GetOne(username, repo.TenantCode))
 }
 
-func (repo LoginUserRepo) UpdateByUsername(user domain.LoginUser) domain.LoginUser {
-	return ToLoginUser(repo.PsqlTunnel.UpdateByUsername(user.Username, repo.TenantCode, map[string]interface{}{
-		"password": user.Password,
-	}))
+func (repo LoginUserRepo) UpdatePasswordByUsername(user domain.LoginUser) domain.LoginUser {
+	return ToLoginUser(
+		repo.PsqlTunnel.UpdateFields(
+			user.Username,
+			repo.TenantCode,
+			tools.NewMap("password", user.Password)))
 }
 
 func (repo LoginUserRepo) FindOne(username string) (domain.LoginUser, bool) {

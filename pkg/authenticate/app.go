@@ -8,6 +8,7 @@ import (
 )
 
 var service = func(tenantCode string) domain.LoginUserService {
+	//TODO check tenantCode
 	return domain.NewLoginUserService(base.NewLoginUserRepo(tools.OpenDB, tenantCode))
 }
 
@@ -20,19 +21,12 @@ func init() {
 func Login(cmd *domain.LoginCmd, tenantCode string) (string, error) {
 	//TODO check tenant
 
-	token, matcherResult := service(tenantCode).Authenticate(cmd)
-	if string(matcherResult) != domain.Success {
-		return "", errors.New(string(matcherResult))
+	token, authenticateResult := service(tenantCode).Authenticate(cmd)
+	if authenticateResult.IsSuccess() {
+		return "", errors.New(string(authenticateResult))
 	}
 	//TODO event
 	return token, nil
-}
-
-func AddUser(cmd *domain.AddLoginUserCmd, tenantCode string) {
-	repo := base.NewLoginUserRepo(tools.OpenDB, tenantCode)
-	user := base.ToLoginUserDO(cmd)
-	user.Password = service(tenantCode).Encrypt(cmd.EncryptWay, cmd.Password)
-	repo.Add(&user)
 }
 
 func ReSetPassword(cmd *domain.ResetPasswordCmd, tenantCode string) domain.ResetPasswordResult {

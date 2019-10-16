@@ -6,6 +6,7 @@ import (
 	. "oneday-infrastructure/internal/pkg/tenant/domain"
 	"oneday-infrastructure/tools"
 	"strconv"
+	"time"
 )
 
 func init() {
@@ -14,16 +15,14 @@ func init() {
 	}
 }
 
-var repo = base.InitTenantRepo(tools.OpenDB)
+var repo = base.NewTenantRepo(tools.OpenDB)
 var tenantService = InitTenantService(repo)
 
-var genUniqueCode GenUniqueCode = func() string { return strconv.Itoa(rand.Intn(1000000)) }
+var genUniqueCode GenUniqueCode = func() string {
+	rand.Seed(time.Now().UnixNano())
+	return strconv.Itoa(rand.Intn(1000000))
+}
 
 func Add(cmd *AddTenantCmd) (TenantCO, AddTenantSuccess) {
 	return tenantService.Add(cmd, genUniqueCode)
-
-}
-func IsExist(code string) bool {
-	_, exist := repo.FindByCode(code)
-	return exist
 }

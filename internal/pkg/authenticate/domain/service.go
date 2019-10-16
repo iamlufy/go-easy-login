@@ -1,6 +1,11 @@
 package domain
 
-import "oneday-infrastructure/internal/pkg/authenticate/facade"
+type LoginUserRepo interface {
+	GetOne(username string) LoginUser
+	UpdatePasswordByUsername(user LoginUser) LoginUser
+	FindOne(username string) (LoginUser, bool)
+	FindSmsCode(mobile string) string
+}
 
 type LoginUserService struct {
 	LoginUserRepo
@@ -22,50 +27,32 @@ func (service LoginUserService) Authenticate(cmd *LoginCmd) (string, Authenticat
 	if !exist {
 		return "", NotExisting
 	}
-	if !user.isAvailable() {
-		return "", NotAvailable
+	authenticate := user.authenticate(cmd.LoginMode, cmd.EncryptWay, cmd.PassCode)
+	if !authenticate.IsSuccess() {
+		return "", authenticate
 	}
-	if !service.compareSourceCode(cmd, user) {
-		return "", AuthenticateFailed
-	}
-	return facade.GenerateToken(cmd.UniqueCode, cmd.EffectiveSeconds), Success
+	//TODO to interface
+	return GenerateToken(cmd.UniqueCode, cmd.EffectiveSeconds), Success
 
-}
-
-func (service LoginUserService) compareSourceCode(cmd *LoginCmd, user LoginUser) bool {
-	switch cmd.LoginMode {
-	case "PASSWORD":
-		return user.comparePassword(cmd.SourceCode, cmd.EncryptWay)
-	case "SMS":
-		return cmd.SourceCode == service.FindSmsCode(user.Mobile)
-	default:
-		panic("unknown authenticate way")
-	}
 }
 
 func (service LoginUserService) GetUserStatus(username string) UserStatus {
-	userDO, existed := service.FindOne(username)
+	user, existed := service.FindOne(username)
 	if !existed {
 		return NotExist
 	}
-	if userDO.IsLock {
-		return LOCKED
+	if !user.isAvailable() {
+		return NotAvailable
 	}
 	return ALLOWED
 }
 
 func (service LoginUserService) ReSetPassword(cmd *ResetPasswordCmd) ResetPasswordResult {
-	user, existed := service.FindOne(cmd.Username)
-	if !existed {
-		return UserNotExisting
-	}
-	if ChooseEncrypter(cmd.EncryptWay)(cmd.OldPassword) != user.Password {
+	user := service.GetOne(cmd.Username)
+
+	if !user.resetPassword(cmd.EncryptWay, cmd.OldPassword, cmd.NewPassword) {
 		return PasswordError
 	}
-	user.resetPassword(cmd.NewPassword, cmd.EncryptWay)
-	service.UpdateByUsername(user)
+	service.UpdatePasswordByUsername(user)
 	return ResetPasswordSuccess
-}
-func (service LoginUserService) Encrypt(encryptWay, s string) string {
-	return ChooseEncrypter(encryptWay)(s)
 }

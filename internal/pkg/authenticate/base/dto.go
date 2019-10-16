@@ -5,9 +5,10 @@ import "oneday-infrastructure/internal/pkg/authenticate/domain"
 func ToLoginUser(do LoginUserDO) domain.LoginUser {
 	return domain.LoginUser{
 		Username: do.Username,
-		Mobile:   do.Mobile,
-		Password: do.Password,
-		IsLock:   do.IsLock,
+		PassCode: domain.PassCode{
+			Password: domain.Password(do.Password),
+		},
+		IsLock: do.IsLock,
 	}
 }
 

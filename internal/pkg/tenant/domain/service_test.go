@@ -1,11 +1,11 @@
 package domain_test
 
 import (
-	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "oneday-infrastructure/internal/pkg/tenant/domain"
 	"oneday-infrastructure/mocks"
+	"oneday-infrastructure/tools"
 	"testing"
 )
 
@@ -27,18 +27,19 @@ var _ = Describe("tenant service", func() {
 		service = InitTenantService(mockRepo)
 	})
 
-	Describe("Insert tenant", func() {
+	Describe("Add tenant", func() {
 		cmd := &AddTenantCmd{TenantName: "TenantName"}
-		newTenantCO := TenantCO{UniqueCode: "code", TenantName: "TenantName"}
-		newTenantDO := ToTenantDO(cmd)
-
+		newTenantCO := TenantCO{TenantCode: "code", TenantName: "TenantName"}
+		tenant := Tenant{
+			TenantName: "TenantName",
+			TenantCode: "code",
+		}
 		genUniqueCode := func() string { return "code" }
-		newTenantDO.UniqueCode = genUniqueCode()
 
-		When("tenant does not exist", func() {
+		When("tenantName does not exist", func() {
 			BeforeEach(func() {
-				mockRepo.On("Insert", newTenantDO).Return(*newTenantDO).Once()
-				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{}, false).Once()
+				mockRepo.On("InsertTenant", tenant).Return(tenant).Once()
+				mockRepo.On("FindByName", tenant.TenantName).Return(tenant, false).Once()
 			})
 
 			It("should return success", func() {
@@ -53,16 +54,44 @@ var _ = Describe("tenant service", func() {
 		When("tenant had existed", func() {
 			BeforeEach(func() {
 				cmd = &AddTenantCmd{TenantName: "TenantName"}
-				mockRepo.On("FindByName", newTenantDO.TenantName).Return(TenantDO{
-					Model: gorm.Model{ID: 1},
-				}, true).Once()
+				mockRepo.On("FindByName", tenant.TenantName).Return(tenant, true).Once()
 			})
 
 			It("should return existed", func() {
 				_, result := service.Add(cmd, genUniqueCode)
-				Expect(result == TenantExist).To(BeTrue())
+				Expect(result == TenantNameExist).To(BeTrue())
 			})
 		})
+	})
+
+	FDescribe("Add tenantUser", func() {
+		cmd := &AddUserCmd{
+			Username:   "Username",
+			Password:   "Password",
+			EncryptWay: "MD5",
+			Mobile:     "23456789011",
+			TenantCode: "123",
+		}
+		args := User{
+			Username:   "Username",
+			Password:   tools.ChooseEncrypter(cmd.EncryptWay)(cmd.Password),
+			Mobile:     "23456789011",
+			TenantCode: "123",
+		}
+		BeforeEach(func() {
+			mockRepo.On("InsertUser", args).Once()
+			mockRepo.On("GetByCode", cmd.TenantCode).Return(Tenant{
+				TenantCode: cmd.TenantCode,
+			}).Once()
+		})
+
+		It("should create successfully", func() {
+			service.AddUser(cmd)
+
+			mockRepo.AssertExpectations(tt)
+
+		})
+
 	})
 
 })
