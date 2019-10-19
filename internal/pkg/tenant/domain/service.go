@@ -22,8 +22,10 @@ type GenUniqueCode func() string
 // TODO move to admin service
 func (service TenantService) Add(cmd *AddTenantCmd, genUniqueCode GenUniqueCode) (TenantCO, AddTenantSuccess) {
 	if tenant, exist := service.FindByName(cmd.TenantName); !exist {
-		tenant.TenantCode = genUniqueCode()
-		service.InsertTenant(tenant)
+		if cmd.TenantCode == "" {
+			tenant.TenantCode = genUniqueCode()
+		}
+		service.InsertTenant(ToTenant(cmd))
 		return ToTenantCO(tenant), AddSuccess
 	}
 	return TenantCO{}, TenantNameExist

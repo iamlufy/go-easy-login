@@ -8,19 +8,19 @@ type AddLoginUserCmd struct {
 }
 
 type LoginCmd struct {
-	Username         string
-	EffectiveSeconds int
-	PassCode         string
-	LoginMode        string
-	EncryptWay       string
-	UniqueCode       string
+	Username         string `json:"username" binding:"required"`
+	EffectiveSeconds int    `json:"effectiveSeconds" binding:"required"`
+	PassCode         string `json:"passCode" binding:"required"`
+	LoginMode        string `json:"loginMode" binding:"required"`
+	EncryptWay       string `json:"encryptWay" binding:"required"`
+	UniqueCode       string `json:"uniqueCode" binding:"required"`
 }
 
 type ResetPasswordCmd struct {
-	Username    string
-	NewPassword string
-	OldPassword string
-	EncryptWay  string
+	Username    string `json:"username" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required"`
+	OldPassword string `json:"OldPassword" binding:"required"`
+	EncryptWay  string `json:"encryptWay" binding:"required"`
 }
 
 const Success = "SUCCESS"

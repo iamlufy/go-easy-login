@@ -19,8 +19,6 @@ func init() {
 }
 
 func Login(cmd *domain.LoginCmd, tenantCode string) (string, error) {
-	//TODO check tenant
-
 	token, authenticateResult := service(tenantCode).Authenticate(cmd)
 	if authenticateResult.IsSuccess() {
 		return "", errors.New(string(authenticateResult))

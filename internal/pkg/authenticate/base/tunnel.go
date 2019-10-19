@@ -13,8 +13,12 @@ type LoginUserDO struct {
 	Username   string `gorm:"type:varchar(100);unique_index;not null"`
 	Password   string `gorm:"type:varchar(100);unique_index;not null;default:''"`
 	IsLock     bool   `gorm:"type:boolean;not null;default:false"`
-	TenantCode string `gorm:"type:varchar(100);unique_index;not null"`
+	TenantCode string `gorm:"type:varchar(100);not null"`
 	Mobile     string `gorm:"type:varchar(100)"`
+}
+
+func (LoginUserDO) TableName() string {
+	return "loginUsers"
 }
 
 type LoginUserRepo struct {

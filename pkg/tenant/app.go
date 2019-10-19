@@ -26,3 +26,7 @@ var genUniqueCode GenUniqueCode = func() string {
 func Add(cmd *AddTenantCmd) (TenantCO, AddTenantSuccess) {
 	return tenantService.Add(cmd, genUniqueCode)
 }
+
+func AddTenantUser(cmd *AddUserCmd) {
+	tenantService.AddUser(cmd)
+}
